@@ -1,8 +1,7 @@
-from django.shortcuts import render,redirect
-from django.http import HttpResponse
-from django.template import loader
-
-
+from django.shortcuts import render
 def home(request):
-    return render(redirect,'test1.html', context = {'message':'1'})
+    return render(request,'accueil.html')
+
+def login(request):
+    return render(request,'login.html')
 # Create your views here.
