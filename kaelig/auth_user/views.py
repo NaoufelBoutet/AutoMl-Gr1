@@ -1,8 +1,11 @@
 from django.shortcuts import render
+from forms import UserForm
 
-def login(request):
+def show_login(request):
     return render(request, 'login.html')
 
-def sign(request): 
+def show_sign(request): 
     return render(request, 'sign.html')
+
+
 # Create your views here.
