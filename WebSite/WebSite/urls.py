@@ -17,8 +17,11 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from Accueil import views
+from Auth import views as Auth_views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', views.index, name="Accueil")
+    path('', views.index, name="Accueil"),
+    path('connexion/', Auth_views.connexion, name="Connexion"),
+    path('inscription/', Auth_views.inscription, name="inscription")
 ]
