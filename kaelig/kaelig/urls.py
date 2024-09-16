@@ -16,11 +16,12 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import include, path
-from autoML import views
+import autoML, auth_user
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', views.home, name='home'),
-    path('login/',views.login, name='login'),
-    path('sign/', views.sign, name='sign')
+    path('', autoML.views.home, name='home'),
+    path('login/',auth_user.views.login, name='login'),
+    path('sign/', auth_user.views.sign, name='sign')
 ]
