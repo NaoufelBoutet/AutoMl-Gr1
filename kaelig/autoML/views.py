@@ -1,8 +1,8 @@
-from django.shortcuts import render
+from django.shortcuts import render,redirect
 from django.http import HttpResponse
 from django.template import loader
 
+
 def home(request):
-    template = loader.get_template('test1.html')
-    return HttpResponse(template.render())
+    return render(redirect,'test1.html', context = {'message':'1'})
 # Create your views here.
