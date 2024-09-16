@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Page d'exemple</title>
+    <!-- Lien vers une feuille de style CSS -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <!-- En-tête de la page -->
+    <header>
+        <h1>Bienvenue sur Mon Site</h1>
+        <nav>
+            <ul>
+                <li><a href="#accueil">Accueil</a></li>
+                <li><a href="#services">Services</a></li>
+                <li><a href="#contact">Contact</a></li>
+                <li><a href="#about">À propos</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Section principale -->
+    <main>
+        <section id="accueil">
+            <h2>Accueil</h2>
+            <p>Bienvenue sur la page d'accueil de notre site. Nous vous offrons des services de qualité pour répondre à vos besoins.</p>
+        </section>
+
+        <section id="services">
+            <h2>Nos Services</h2>
+            <ul>
+                <li>Consultation professionnelle</li>
+                <li>Développement web</li>
+                <li>Support technique</li>
+            </ul>
+        </section>
+
+        <section id="about">
+            <h2>À propos de nous</h2>
+            <p>Nous sommes une équipe passionnée de développement web et nous mettons tout en œuvre pour fournir des solutions efficaces à nos clients.</p>
+        </section>
+    </main>
+
+    <!-- Section contact -->
+    <section id="contact">
+        <h2>Contactez-nous</h2>
+        <form action="#" method="post">
+            <label for="nom">Nom:</label>
+            <input type="text" id="nom" name="nom" required>
+            
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" required>
+            
+            <label for="message">Message:</label>
+            <textarea id="message" name="message" required></textarea>
+            
+            <button type="submit">Envoyer</button>
+        </form>
+    </section>
+
+    <!-- Pied de page -->
+    <footer>
+        <p>&copy; 2024 Mon Site Web. Tous droits réservés.</p>
+        <div>
+            <a href="#">Mentions légales</a> | <a href="#">Politique de confidentialité</a>
+        </div>
+    </footer>
+
+</body>
+</html>
