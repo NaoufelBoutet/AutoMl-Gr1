@@ -5,7 +5,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 {% load static %}
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="{% static 'style.css' %}">
 <style>
 body {font-family: "Lato", sans-serif}
 .mySlides {display: none}
@@ -15,11 +15,11 @@ body {font-family: "Lato", sans-serif}
 
 <!-- Navbar -->
 <div class="w3-top">
-  <div class="w3-bar w3-black w3-card">
+  <div class="nav_black">
     <a class="w3-bar-item w3-button w3-padding-large w3-hide-medium w3-hide-large w3-right" title="Toggle Navigation Menu"><i class="fa fa-bars"></i></a>
-    <a href="#" class="nav_black">HOME</a>
-    <a href="{% url 'show_sign'%}" class="nav_black">SIGN IN</a>
-    <a href="{% url 'show_login'%}" class="nav_black">LOG IN</a>
+    <a href="#" class="nav_police_black">HOME</a>
+    <a href="{% url 'show_sign'%}" class="nav_police_black">SIGN IN</a>
+    <a href="{% url 'show_login'%}" class="nav_police_black">LOG IN</a>
   </div>
 </div>
 
