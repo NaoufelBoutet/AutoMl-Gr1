@@ -29,7 +29,7 @@ def sign_in(request):
             
             # Message de succès et redirection
                 messages.success(request, "Utilisateur créé avec succès.")
-                return redirect('success')
+                return redirect('show_login')
         else:
             return HttpResponse("Hello, World!")
     return render(request, 'sign.html', {'form': form})
@@ -54,7 +54,3 @@ def login(request):
 def success(request):
     return render(request, 'sucess.html')
 
-        
-
-
-# Create your views here.
