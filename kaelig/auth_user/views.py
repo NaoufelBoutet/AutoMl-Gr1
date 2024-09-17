@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from django.contrib import messages
 from .forms import UserForm
 from django.http import HttpResponse
+from django.contrib.auth import authenticate,login as auth_login
 
 def show_login(request):
     return render(request, 'login.html')
@@ -32,6 +33,25 @@ def sign_in(request):
         else:
             return HttpResponse("Hello, World!")
     return render(request, 'sign.html', {'form': form})
+
+def login(request):
+    if request.method=='POST':
+        form=UserForm(request.POST)
+        print(form)
+        if form.is_valid():
+            username = form.cleaned_data['username']
+            password = form.cleaned_data['password']
+            user=authenticate(username=username,password=password)
+            if user is not None:
+                print(user)
+                print('____________________________________________')
+                auth_login(request, user)
+                messages.success(request, "Utilisateur créé avec succès.")
+                return redirect('success')
+            else:
+                messages.error(request, "Nom d'utilisateur ou mot de passe incorrect.")
+                return HttpResponse("Hello, World!")
+    return render(request, 'login.html', {'form': form})
 
 def success(request):
     return render(request, 'sucess.html')
