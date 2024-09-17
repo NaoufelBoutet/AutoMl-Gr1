@@ -12,16 +12,12 @@ document.addEventListener('DOMContentLoaded', () => {
     zone_drag.addEventListener('dragover', (e) => {
         e.preventDefault(); // Nécessaire pour autoriser le drop
     });
-    
-    drag_object.addEventListener('drop', (e) => {
-        let positionX=e.ClientX
-        let positionY=e.ClientY
-
-    })
 
     // Gérer le drop
     zone_drag.addEventListener('drop', (e) => {
         e.preventDefault();
+        let positionX=e.ClientX
+        let positionY=e.ClientY
         const id = e.dataTransfer.getData('text'); // Récupère l'ID de l'élément
         const draggedElement = document.getElementById(id);
 
