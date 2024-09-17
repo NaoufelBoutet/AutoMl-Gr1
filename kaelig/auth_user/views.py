@@ -43,11 +43,9 @@ def login(request):
             password = form.cleaned_data['password']
             user=authenticate(username=username,password=password)
             if user is not None:
-                print(user)
-                print('____________________________________________')
                 auth_login(request, user)
                 messages.success(request, "Utilisateur créé avec succès.")
-                return redirect('success')
+                return redirect('perso', username=username)
             else:
                 messages.error(request, "Nom d'utilisateur ou mot de passe incorrect.")
                 return HttpResponse("Hello, World!")

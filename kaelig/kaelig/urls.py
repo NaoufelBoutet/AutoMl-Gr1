@@ -27,6 +27,6 @@ urlpatterns = [
     path('sign/', auth_user_views.show_sign, name='show_sign'),
     path('users/', auth_user_views.sign_in, name='sign_in'),
     path('connect/',auth_user_views.login, name='login'),
-    path('sucess/',auth_user_views.success, name='success')
-    
+    path('<str:username>',autoML_views.espace_personel,name='perso')
+    path('sucess/',auth_user_views.success, name='success')    
 ]
