@@ -1,16 +1,15 @@
 .nav_police_black {
-    font-size: 1.7em;
+    font-size: 2em;
     color: white;
     text-decoration: None;
+    margin-right: 15px;
+    margin-left: 15px;
+    border:3px wheat;
 }
 .nav_black {
-    block-size: 30px;
+    font-family: 'Playfair Display', sans-serif;
+    block-size: 45px;
     background-color: black;
     padding: 3px;
-    border:3px;
-    border-color:red;
-}
-.nav_block_black {
-    writing-mode: horizontal-tb;
-    block-size: 20px;
+    border:3px solid red;
 }
