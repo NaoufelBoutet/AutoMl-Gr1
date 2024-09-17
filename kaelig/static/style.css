@@ -28,12 +28,10 @@
 }
 
 .test {
-    display: grid;
     height: 40px;
     background-color: black;
     width:40px;
     cursor: grab;
-
 }
 
 .test_place {

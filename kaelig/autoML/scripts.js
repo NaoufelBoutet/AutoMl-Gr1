@@ -16,8 +16,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Gérer le drop
     zone_drag.addEventListener('drop', (e) => {
         e.preventDefault();
-        let positionX=e.ClientX
-        let positionY=e.ClientY
+        let positionX=e.clientX
+        let positionY=e.clientY
         const id = e.dataTransfer.getData('text'); // Récupère l'ID de l'élément
         const draggedElement = document.getElementById(id);
 
