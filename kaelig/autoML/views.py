@@ -3,6 +3,6 @@ def home(request):
     return render(request, 'accueil.html')
 
 def espace_personel(request,username:str):
-    return render(request, 'espace_personel.html',{'username': username})
+    return render(request, 'espace_perso.html',{'username': username})
 
 # Create your views here.
