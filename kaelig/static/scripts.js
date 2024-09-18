@@ -18,7 +18,17 @@ document.addEventListener('DOMContentLoaded', () => {
     // Gérer le drop
     zone_drag.addEventListener('drop', (e) => {
         e.preventDefault();
-        var nb_clone= document.getElementsByClassName('clone')
+        var list_clone= document.getElementsByClassName('clone')
+        let nb_clone=list_clone.length
+        let zoneHeight = parseFloat(window.getComputedStyle(zone_drag).getPropertyValue('height'));
+        // Obtenir la hauteur de l'objet draggable
+        let dragObjectHeight = parseFloat(window.getComputedStyle(drag_object).getPropertyValue('height'));
+        let dragObjectWidth = parseFloat(window.getComputedStyle(drag_object).getPropertyValue('width'));
+        // Calculer le décalage
+        let adjust_X=nb_clone*dragObjectHeight
+        while (adjust_X/zoneHeight>1) {
+            adjust_X-=zoneHeight
+        }
         let positionX=e.clientX
         let positionY=e.clientY
         let positionXfinal=positionX-positionXzone
@@ -29,7 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Crée un clone de l'élément déplacé
         const clone = draggedElement.cloneNode(true);
         clone.classList.add('clone'); // Ajoute une classe au clone (si nécessaire)
-        clone.setAttribute("style", `left:${positionXfinal}px;top:${positionYfinal}px;position:relative`);
+        clone.setAttribute("style", `left:${positionXfinal-(adjust_X+dragObjectHeight)}px;top:${positionYfinal-dragObjectWidth}px;position:relative`);
 
         // Ajoute le clone dans la zone de drop
         zone_drag.appendChild(clone);
