@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Calculer le décalage
         let adjust_X=nb_clone*dragObjectHeight
         while (adjust_X/zoneHeight>1) {
-            adjust_X-=(zoneHeight+dragObjectHeight)
+            adjust_X-=(zoneHeight)
         }
         console.log(adjust_X)
         console.log(nb_clone)
@@ -42,7 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const clone = draggedElement.cloneNode(true);
         clone.classList.add('clone'); // Ajoute une classe au clone (si nécessaire)
         
-        clone.setAttribute("style", `left:${positionXfinal-(adjust_X)}px;top:${positionYfinal}px;position:relative`);
+        clone.setAttribute("style", `left:${positionXfinal-(adjust_X+dragObjectHeight)}px;top:${positionYfinal-dragObjectWidth}px;position:relative`);
 
         // Ajoute le clone dans la zone de drop
         zone_drag.appendChild(clone);
