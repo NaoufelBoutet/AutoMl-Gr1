@@ -1,7 +1,7 @@
 
 function setupDragAndDrop(dragObjectId, dropZoneId,clonage) {
-    const dragObject = document.getElementsById(dragObjectId);
-    const dropZone = document.getElementsById(dropZoneId); 
+    const dragObject = document.getElementById(dragObjectId);
+    const dropZone = document.getElementById(dropZoneId); 
 
     // Obtenir les dimensions de la zone de drop
     const positionXzone = dropZone.offsetLeft;
