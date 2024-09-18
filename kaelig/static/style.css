@@ -32,7 +32,8 @@
     background-color: black;
     width:40px;
     cursor: grab;
-    position:absolute;
+    border: 2px solid red;
+    display: inline-block;
 }
 
 #zone_drag {
