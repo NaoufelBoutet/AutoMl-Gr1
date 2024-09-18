@@ -1,6 +1,14 @@
+
 function setupDragAndDrop(dragObjectId, dropZoneId,clonage) {
-    const dragObject = document.getElementById(dragObjectId);
-    const dropZone = document.getElementById(dropZoneId);
+    const dragObject= 0
+    const dropZone= 0
+    if (clonage===true) {
+        dragObject = document.getElementsById(dragObjectId);
+        dropZone = document.getElementsByID(dropZoneId);       
+    } else {
+        dragObject = document.getElementsByClassName(dragObjectId);
+        dropZone = document.getElementsById(dropZoneId);  
+    }
 
     // Obtenir les dimensions de la zone de drop
     const positionXzone = dropZone.offsetLeft;
@@ -65,8 +73,11 @@ function setupDragAndDrop(dragObjectId, dropZoneId,clonage) {
     });
 }
 
+document.addEventListener('click', (e)=>{
+    let  clickedElement = e.target; 
+    let elementId = clickedElement.id;
+})
 // Appel de la fonction avec des paramètres
 document.addEventListener('DOMContentLoaded', () => {
     setupDragAndDrop('object_draggable', 'zone_drag',true);
 });
-
