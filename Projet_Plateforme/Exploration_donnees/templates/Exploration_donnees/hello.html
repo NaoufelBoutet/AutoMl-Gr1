@@ -1,0 +1,12 @@
+
+{% extends 'Exploration_donnees/base.html' %}
+{% block content %}
+
+<h1> Bonjour à tous!</h1>
+<p>Vous avez {{ utilisateurs|length }} utilisateurs enregistrés.</p>
+<p> Selection d'exemple :
+        {% for utilisateur in utilisateurs %}
+            <li>{{ utilisateur.nom|upper  }}</li>
+        {% endfor %}
+</p>
+{% endblock %}
