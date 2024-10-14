@@ -1,7 +1,10 @@
-
+{% load static %}
 
 <html>
-    <head><title>Exploration des donnees</title></head>
+    <head>
+        <title>Exploration des donnees</title>
+        <link rel="stylesheet" href="{% static 'Exploration_donnees/styles.css' %}" />
+    </head>
     <body>
 
         {% block content %}{% endblock %}
