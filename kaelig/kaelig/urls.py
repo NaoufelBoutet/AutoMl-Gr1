@@ -18,6 +18,7 @@ from django.contrib import admin
 from django.urls import include, path
 from autoML import views as autoML_views
 from auth_user import views as auth_user_views
+from import_donnee import views as import_donnee_views
 
 
 urlpatterns = [
@@ -28,5 +29,6 @@ urlpatterns = [
     path('users/', auth_user_views.sign_in, name='sign_in'),
     path('connect/',auth_user_views.login, name='login'),
     path('<str:username>',autoML_views.espace_personel,name='perso'),
-    path('sucess/',auth_user_views.success, name='success')    
+    path('sucess/',auth_user_views.success, name='success'),    
+    path('import_data_home', import_donnee_views.home_import_data, name='home_import_data')
 ]
