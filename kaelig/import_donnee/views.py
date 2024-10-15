@@ -8,7 +8,7 @@ def home_data(request,username):
     return render(request, 'home_data.html',{'username' : username})
 
 def result_csv(request,message):
-    return render(request, 'home_data.html',{'message' : message})
+    return render(request, 'result.html',{'message' : message})
 
 def test_csv(username, filename):
     db, client = get_db_mongo('Auto_ML','localhost',27017)
@@ -19,7 +19,7 @@ def test_csv(username, filename):
     else:
         return 1
 
-def import_csv(request, username):
+def upload_csv(request, username):
     db,client = get_db_mongo('Auto_ML','localhost',27017)
     fs = gridfs.GridFS(db)
     print('ouuuuuuuuuuuuuuuuuui')
