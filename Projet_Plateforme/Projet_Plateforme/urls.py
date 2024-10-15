@@ -23,7 +23,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('hello/', Explo_views.hello), # alias et nom de la fonction, ici "hello"
     path('about_us/', polls_views.about_us),
-    path('contact_us/',polls_views.contact_us),
-    path('help/',polls_views.help),
+    path('contact_us/', polls_views.contact_us),
+    path('help/', polls_views.help),
+    path('import_csv/', Explo_views.import_csv, name='import_csv'),
 ]
 

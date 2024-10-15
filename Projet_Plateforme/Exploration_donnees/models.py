@@ -38,7 +38,6 @@ class Utilisateurs(models.Model):
         URUGUAY = 'UY', 'Uruguay'
         VENEZUELA = 'VE', 'Venezuela'
         VIETNAM = 'VN', 'Vietnam'
-
     nom = models.CharField(max_length=100)
     prenom = models.CharField(max_length=100)
     date_creation = models.DateTimeField(auto_now_add=True, null=True)  # Allow null for existing rows
@@ -57,4 +56,12 @@ class Utilisateurs(models.Model):
     experience = models.IntegerField(validators=[MinValueValidator(0),
                                                   MaxValueValidator(5)], null=True)
     languages = models.CharField(choices=Languages.choices, max_length=4, null=True)
-    
+
+
+class Projet(models.Model):
+    nom_Projet = models.CharField(max_length=100)
+    csv_file = models.FileField(upload_to='datasets')   
+    def __str__(self):
+        return self.nom_Projet
+ 
+

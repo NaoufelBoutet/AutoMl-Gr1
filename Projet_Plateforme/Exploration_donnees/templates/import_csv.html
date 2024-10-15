@@ -1,0 +1,30 @@
+{% extends 'Exploration_donnees/base.html' %}
+{% block content %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Votre fichier</title>
+</head>
+<body>
+    <h2>Importer un fichier CSV</h2>
+
+    <!-- Affichage des messages d'erreur/succès -->
+    {% if messages %}
+        <ul>
+            {% for message in messages %}
+                <li{{ message.tags }}>{{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Importer</button>
+    </form>
+</body>
+</html>
+{% endblock %}
