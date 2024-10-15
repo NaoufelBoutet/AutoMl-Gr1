@@ -1,6 +1,6 @@
 <html>
     <head>
-        <title>Espace perso</title>
+        <title>Espace import data</title>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         {% load static %}
@@ -12,22 +12,7 @@
         
     </head>
     <body>
-    <nav class="nav_black">
-        <a href="#" class="a_nav_black">
-            <div class="nav_police_black">
-            HOME
-            </div>
-        </a>
-        <a href="{% url 'home_data' username %}" class="a_nav_black">
-            <div class="nav_police_black">
-            IMPORT FILE
-            </div>
-        </a>
-        </nav>
-
-        <h1>Bonjour {{username}}</h1>
-
-
+        <h1>{{message}}</h1>
 
     </body>
 </html>
