@@ -38,7 +38,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'autoML',
-    'auth_user'
+    'auth_user',
+    'import_donnee'
 ]
 
 MIDDLEWARE = [

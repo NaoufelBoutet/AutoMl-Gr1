@@ -13,8 +13,11 @@
     </head>
     <body>
         <h1>Bonjour mec !!!!!</h1>
-
-
-
+        <form method="POST" enctype="multipart/form-data" action="{% url 'upload_csv' %}">
+            {% csrf_token %}
+            <label for="csv_file">Télécharger un fichier CSV :</label>
+            <input type="file" id="csv_file" name="csv_file" accept=".csv">
+            <button type="submit">Uploader</button>
+        </form>
     </body>
 </html>

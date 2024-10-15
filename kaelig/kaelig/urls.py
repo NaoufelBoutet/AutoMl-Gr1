@@ -30,5 +30,6 @@ urlpatterns = [
     path('connect/',auth_user_views.login, name='login'),
     path('<str:username>',autoML_views.espace_personel,name='perso'),
     path('sucess/',auth_user_views.success, name='success'),    
-    path('import_data_home/', import_donnee_views.home_data, name='home_data')
+    path('import_data_home/', import_donnee_views.home_data, name='home_data'),
+    path('upload_csv/',import_donnee_views.import_csv,name='upload_csv')
 ]
