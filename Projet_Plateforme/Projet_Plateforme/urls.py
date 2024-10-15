@@ -18,6 +18,7 @@ from django.contrib import admin
 from django.urls import path
 from polls import views as polls_views
 from Exploration_donnees import views as Explo_views # donner un alias pour ne pas mélanger les "views"
+from Authentification  import views as Authentification_views 
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -26,5 +27,6 @@ urlpatterns = [
     path('contact_us/', polls_views.contact_us),
     path('help/', polls_views.help),
     path('import_csv/', Explo_views.import_csv, name='import_csv'),
+    path('inscriptions/', Authentification_views.inscriptions , name='inscription'),
 ]
 

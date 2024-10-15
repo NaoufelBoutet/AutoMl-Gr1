@@ -30,7 +30,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'polls',
-    'Exploration_donnees'
+    'Authentification',
+    'Exploration_donnees',
 ]
 
 MIDDLEWARE = [
