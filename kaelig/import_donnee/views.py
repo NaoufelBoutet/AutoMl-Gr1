@@ -1,6 +1,6 @@
 from django.shortcuts import render
 import csv
-from kaelig.utils import get_db_mongo
+from utils import get_db_mongo
 import pymongo
 import gridfs
 
