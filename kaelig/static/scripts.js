@@ -11,12 +11,7 @@ function setupDragAndDrop(dragObjectId, dropZoneId,clonage) {
     dragObject.addEventListener('dragstart', (e) => {
         e.dataTransfer.setData('text', e.target.id); // Stocke l'ID de l'élément
         console.log(e.dataTransfer.setData('text', e.target.id))
-        if (clonage===true) {
-            e.dataTransfer.effectAllowed = 'copy'; // Autorise la copie
-        }
-        else {
-            e.dataTransfer.effectAllowed = 'move';
-        }
+        e.dataTransfer.effectAllowed = 'copy'; // Autorise la copie
     });
 
     // Empêche le comportement par défaut pour permettre le drop
@@ -49,22 +44,16 @@ function setupDragAndDrop(dragObjectId, dropZoneId,clonage) {
         const id = e.dataTransfer.getData('text'); // Récupère l'ID de l'élément
         const draggedElement = document.getElementById(id);
 
-        if (clonage===true){
-            const clone = draggedElement.cloneNode(true);
-            clone.classList.add('clone'); // Ajoute une classe au clone (si nécessaire)
+        const clone = draggedElement.cloneNode(true);
+        clone.classList.add('clone'); // Ajoute une classe au clone (si nécessaire)
 
-            // Positionner le clone
-            clone.setAttribute("style", `left:${positionXfinal - (adjustX + dragObjectHeight)}px;top:${positionYfinal - adjustY}px;position:relative`);
-            clone.setAttribute('Id',`clone${nbClone}`)
-            // Ajoute le clone dans la zone de drop
-            dropZone.appendChild(clone);
-        } else {
-            dropZone.appendChild(draggedElement.setAttribute("style", `left:${positionXfinal - (adjustX + dragObjectHeight)}px;top:${positionYfinal - adjustY}px;position:relative`));
-
-        }
+        // Positionner le clone
+        clone.setAttribute("style", `left:${positionXfinal - (adjustX + dragObjectHeight)}px;top:${positionYfinal - adjustY}px;position:relative`);
+        clone.setAttribute('Id',`clone${nbClone}`)
+        // Ajoute le clone dans la zone de drop
+        dropZone.appendChild(clone);
     });
 }
-
 document.addEventListener('click', (e)=>{
     let  clickedElement = e.target; 
     let elementId = clickedElement.id;
