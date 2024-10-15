@@ -1,12 +1,35 @@
 from django.shortcuts import render
 import csv
 from kaelig.utils import get_db_mongo
+import pymongo
+import gridfs
+
+def test_csv(username,filename):
+    db, client = get_db_mongo('Auto_ML','localhost',27017)
+    fs = gridfs.GridFS(db)
+    file = fs.find({"metadata.username": username,'metadata.filename':filename})
+    if file.count()==0:
+        return None
+    else:
+        return 1
 
 def import_csv(username,name,delimiter,quotechar):
-    db, client = get_db_mongo('Auto_ML','localhost',27017)
-    collection = db['fichier_import']
-    with open('eggs.csv', newline='') as csvfile:
-        spamreader = csv.reader(csvfile, delimiter=delimiter, quotechar=quotechar)
+    db,client = get_db_mongo('Auto_ML','localhost',27017)
+    fs = gridfs.GridFS(db)
+    filename=f"{name}.csv"
+    if not test_csv(username,filename):
+        with open("large_file.csv", "rb") as file:
+            file_id = fs.put(
+                file, 
+                filename=filename, 
+                metadata={"username": username,'filename':filename}
+            )
+    else:
+        return 'le fichier existe deja'
+
+        
+
+
 
 
 
