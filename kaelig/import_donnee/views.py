@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 import csv
 from utils import get_db_mongo
 import pymongo
@@ -6,6 +6,9 @@ import gridfs
 
 def home_data(request,username):
     return render(request, 'home_data.html',{'username' : username})
+
+def result_csv(request,message):
+    return render(request, 'home_data.html',{'message' : message})
 
 def test_csv(username, filename):
     db, client = get_db_mongo('Auto_ML','localhost',27017)
@@ -26,7 +29,7 @@ def import_csv(request, username):
 
         # S'assurer que c'est bien un fichier CSV
         if not csv_file.name.endswith('.csv'):
-            return render(request, 'result.html', {'message': 'Ce fichier n\'est pas un CSV'})
+            return redirect(request, 'result_csv', {'message': 'Ce fichier n\'est pas un CSV'})
 
         if not test_csv(username,csv_file.name):
             file_id = fs.put(
@@ -36,10 +39,11 @@ def import_csv(request, username):
             )
 
         else:
-            return render(request, 'result.html', { 'message': 'le fichier existe deja'})
-    client.close()
-    return render(request, 'result.html', { 'message': 'le fichier est bien enregistrer'})
-        
+            return redirect(request, 'result_csv', { 'message': 'le fichier existe deja'})
+        client.close()
+        return redirect(request, 'result_csv', { 'message': 'le fichier est bien enregistrer'})
+    else :
+        return redirect(request, 'result_csv', { 'message': 'probleme sur la methode ou la requete'})
 
 
 
