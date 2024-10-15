@@ -5,7 +5,7 @@ import pymongo
 import gridfs
 
 def home_data(request):
-    return render(request, 'home_import_data.html')
+    return render(request, 'home_data.html')
 
 def test_csv(username,filename):
     db, client = get_db_mongo('Auto_ML','localhost',27017)
