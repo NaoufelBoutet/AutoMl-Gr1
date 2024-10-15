@@ -58,10 +58,13 @@ class Utilisateurs(models.Model):
     languages = models.CharField(choices=Languages.choices, max_length=4, null=True)
 
 
-class Projet(models.Model):
-    nom_Projet = models.CharField(max_length=100)
+class Projet(models.Model): # Définition d'un modèle appelé "Projet".
+    nom_Projet = models.CharField(max_length=50) # Ce champ représente le nom du projet, avec une longueur maximale de 50 caractères.
     csv_file = models.FileField(upload_to='datasets')   
+    # Ce champ permet de télécharger et de stocker un fichier (typiquement un fichier CSV).
+    # Le fichier sera stocké dans un sous-dossier appelé "datasets" du répertoire de fichiers de ton projet.
     def __str__(self):
         return self.nom_Projet
- 
+    # Cette méthode permet de définir ce qui sera retourné lorsqu'on affiche une instance de ce modèle en tant que chaîne.
+
 
