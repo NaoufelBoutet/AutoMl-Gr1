@@ -22,6 +22,7 @@ def test_csv(username, filename):
 def import_csv(request, username):
     db,client = get_db_mongo('Auto_ML','localhost',27017)
     fs = gridfs.GridFS(db)
+    print('ouuuuuuuuuuuuuuuuuui')
 
     if request.method == 'POST' and request.FILES['csv_file']:
         # Récupérer le fichier téléversé
