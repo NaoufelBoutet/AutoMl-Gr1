@@ -30,6 +30,7 @@ def sign_in(request):
     return render(request, 'sign.html', {'form': form})
 
 def login(request):
+    print('oooooooooooooooooooooooooooooooui')
     if request.method=='POST':
         form=UserForm(request.POST)
         print(form)

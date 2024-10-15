@@ -5,6 +5,7 @@ import pymongo
 import gridfs
 
 def home_data(request,username):
+    print('oooooooooooooooooooooui111111111111111111')
     return render(request, 'home_data.html',{'username' : username})
 
 def result_csv(request,message):
