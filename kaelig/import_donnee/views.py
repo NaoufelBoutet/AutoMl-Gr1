@@ -4,7 +4,7 @@ from utils import get_db_mongo
 import pymongo
 import gridfs
 
-def home_import_data(request):
+def home_data(request):
     return render(request, 'home_import_data.html')
 
 def test_csv(username,filename):
