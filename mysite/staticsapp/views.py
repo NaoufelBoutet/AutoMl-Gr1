@@ -87,6 +87,7 @@ def afficher_dataset(request):
                 columns = dataset['columns'] if 'columns' in dataset else []
 
                 # Renvoie la liste complète des datasets
+                
                 return render(request, 'accueil.html', {
             'form': forms.FileUploadForm(),  # Toujours renvoyer le formulaire
             'dataset': dataset['data'], 
@@ -94,5 +95,5 @@ def afficher_dataset(request):
             'dataset_name': dataset_name,  # Ajoute cette ligne pour passer le nom du dataset
             'dataset_list': [ds['dataset_name'] for ds in MongoDict["coll"].find({'user_id': request.user.id})]
         })
-            
+    MongoDict['client'].close()
     return redirect('accueil')

@@ -14,13 +14,11 @@ def connexion(request):
             user = authenticate(request, username=username, password=password)
             if user is not None:
                 login(request, user)
-                print("Connexion réussie")
                 return redirect('accueil')
             else:
                 form.add_error(None, "Nom d'utilisateur ou mot de passe incorrect.")
-                return redirect("connexion")
 
-    return render (request, "connexion.html",{"form":form})
+    return render(request, "connexion.html", {"form": form})
 
 def deconnexion(request):
     logout(request)
