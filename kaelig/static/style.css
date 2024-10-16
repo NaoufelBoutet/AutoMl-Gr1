@@ -44,7 +44,7 @@
 
 .menu {
     width: 200px;
-    background-color: red;
+    background-color: rgb(62, 41, 111);
     padding: 15px;
     border-radius: 5px;
 }
@@ -65,18 +65,23 @@
 }
 
 .menu_element:hover {
-    background-color: #575757;
+    background-color: #b7a3a3;
 }
 
-.sousmenu {
+.sous_menu {
     display: none; /* Masquer le sous-menu par défaut */
     padding-left: 20px; /* Indentation pour le sous-menu */
 }
 
-.sousmenu li a {
-    background-color: #444;
+.sous_menu li a {
+    background-color: #f6eded;
 }
 
-.sousmenu li a:hover {
-    background-color: #555;
+.sous_menu li a:hover {
+    background-color: #ab3737;
+}
+
+.element_du_menu {
+    color:black;
+    text-decoration: None;
 }

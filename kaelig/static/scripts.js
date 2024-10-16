@@ -62,3 +62,21 @@ document.addEventListener('click', (e)=>{
 document.addEventListener('DOMContentLoaded', () => {
     setupDragAndDrop('object_draggable', 'zone_drag',true);
 });
+
+document.addEventListener('DOMContentLoaded', function () {
+    const menu_element = document.querySelectorAll('.menu_element');
+
+    menu_element.forEach(item => {
+        item.addEventListener('click', function (e) {
+            e.preventDefault(); // Empêche le lien de naviguer
+            const sous_menu = this.nextElementSibling; // Trouve le sous-menu correspondant
+
+            // Toggle pour montrer/masquer le sous-menu
+            if (sous_menu.style.display === 'block') {
+                sous_menu.style.display = 'none';
+            } else {
+                sous_menu.style.display = 'block';
+            }
+        });
+    });
+});
