@@ -28,11 +28,11 @@
         <div id="menu">
             <ul>
                 <li>
-                    <a href="#" class="menu_csv">CSV</a>
-                    <ul>
+                    <a href="#" class="menu_element">CSV</a>
+                    <ul class="sous_menu">
                         {% for file in files %}
-                            <li class="sous_menu">
-                                <a href=""title='{{ file.metadata.filename }}'>Nom du fichier : {{ file.metadata.filename }}</a>
+                            <li >
+                                <a href="#">Nom du fichier : {{ file.metadata.filename }}</a>
                             </li>
                         {%endfor%}
                     </ul>
