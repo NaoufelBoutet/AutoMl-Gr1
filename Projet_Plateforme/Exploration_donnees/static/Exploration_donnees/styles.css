@@ -1,5 +1,4 @@
-/* Reset et styles de base */
-* {
+ {
     box-sizing: border-box; /* Inclut la bordure et le padding dans la largeur totale de l'élément */
     margin: 0; /* Supprime la marge par défaut */
     padding: 0; /* Supprime le padding par défaut */
@@ -50,8 +49,13 @@ form button {
     margin: 10px 0; /* Marge supérieure et inférieure pour l'espacement */
     padding: 10px; /* Espacement interne pour le confort */
     border: 1px solid #cccccc; /* Bordure */
-    border-radius: 4px; /* Coins arrondis */
+    border-radius: 5px; /* Coins arrondis */
+    margin-bottom: 1em;
+    padding: 0.8em;
+    font-size: 1em;
 }
+
+
 
 /* Styles pour le bouton */
 form button {
@@ -59,19 +63,20 @@ form button {
     color: white; /* Couleur du texte du bouton */
     border: none; /* Supprime la bordure par défaut */
     cursor: pointer; /* Change le curseur au survol */
+    font-size: 1em; /* Taille de police légèrement plus petite */
 }
 
 form button:hover {
-    background-color: #5e4db6; /* Couleur légèrement plus foncée au survol */
+    background-color: #5e4db6; /* Couleur DES BOUTONS légèrement plus foncée au survol */
 }
 
 /* Footer */
 .footer {
     text-align: center; /* Centre le texte dans le pied de page */
-    padding: 10px; /* Espacement interne */
+    padding: 20px; /* Espacement interne */
     margin-top: 20px; /* Marge supérieure pour séparer du contenu principal */
     font-size: 0.9em; /* Taille de police légèrement plus petite */
-    color: #777; /* Couleur du texte plus claire */
+    color: #fcfcfc; /* Couleur du texte plus claire */
     background-color: #333; /* Couleur de fond */
     position: fixed; /* Fixe le pied de page en bas */
     width: 100%; /* Occupe toute la largeur */
@@ -79,12 +84,11 @@ form button:hover {
 }
 
 .footer a {
-    color: #4d11f3; /* Couleur des liens */
-    margin: 0 15px; /* Espacement entre les liens */
+    color: #f4f4f7; /* Couleur des liens dans la barre OK/
+    margin: 15px; /* Espacement entre les liens OK /
     text-decoration: none; /* Supprime la décoration de lien */
 }
 
 .footer a:hover {
-    color: #3de7c2; /* Change la couleur au survol */
+    color: #3de7c2; /* Change la couleur au survol  OK/
 }
-
