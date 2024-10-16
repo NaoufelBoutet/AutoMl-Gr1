@@ -118,6 +118,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR /'media'
 
+LOGIN_URL = 'login'  # Nom de la vue pour la connexion
+LOGIN_REDIRECT_URL = 'hello'  # Page où l'utilisateur est redirigé après connexion
 
 
 
