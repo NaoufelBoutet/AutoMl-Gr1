@@ -24,7 +24,7 @@ def connexion(request):
 
 def deconnexion(request):
     logout(request)
-    return render(request,"connexion.html")
+    return redirect(connexion)
 
 def inscription(request):
     if request.method == 'POST':
@@ -33,8 +33,8 @@ def inscription(request):
             user = form.save(commit=False)
             user.set_password(form.cleaned_data['password'])
             user.save()
-            login(request, user)  # Connecte automatiquement l'utilisateur après l'inscription
-            return redirect('accueil')  # Redirige vers la page d'accueil après l'inscription
+            login(request, user)  
+            return redirect('accueil')  
     else:
         form = InscriptionForm()
 

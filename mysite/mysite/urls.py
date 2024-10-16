@@ -21,9 +21,10 @@ from staticsapp import views as staticsviews
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', authviews.connexion , name='connexion'),
+    path('connexion/', authviews.connexion , name='connexion'),
     path('inscription/', authviews.inscription , name='inscription'),
     path('accueil/', staticsviews.accueil , name='accueil'),
     path('deconnexion/', authviews.deconnexion , name='deconnexion'),
+    path('afficher_dataset/', staticsviews.afficher_dataset, name='afficher_dataset')
     
 ]

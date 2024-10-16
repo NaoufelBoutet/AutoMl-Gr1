@@ -1,3 +1,4 @@
+{% load custom_filters %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,18 +8,56 @@
 </head>
 <body>
     <nav>
-        
-            {% if not user.is_authenticated %}
-            <a href="{% url 'inscription' %}">Inscription</a>
-            {% endif %}
-            {% if not user.is_authenticated %}
-            <a href="{% url 'connexion' %}">Connexion</a>
-            {% endif %}
-            {% if user.is_authenticated %}
-            <a href="{% url 'deconnexion' %}">Déconnexion</a>
-            {% endif %}
-        
+        {% if not user.is_authenticated %}
+        <a href="{% url 'inscription' %}">Inscription</a>
+        {% endif %}
+        {% if not user.is_authenticated %}
+        <a href="{% url 'connexion' %}">Connexion</a>
+        {% endif %}
+        {% if user.is_authenticated %}
+        <a href="{% url 'deconnexion' %}">Déconnexion</a>
+        {% endif %}
     </nav>
     <h1>Accueil</h1>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Télécharger</button>
+    </form>
+    
+
+    <form method="post" action="{% url 'afficher_dataset' %}">
+        {% csrf_token %}
+        <label for="dataset">Choisir un dataset :</label>
+        <select name="dataset" id="dataset">
+            <option value="">--Sélectionner un dataset--</option>
+            {% for dataset in dataset_list %}
+                <option value="{{ dataset }}">{{ dataset }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit">Afficher</button>
+    </form>
+
+    {% if dataset %}
+<h2>Données du Dataset: </h2>
+<table>
+    <thead>
+        <tr>
+            {% for column in columns %}
+            <th>{{ column }}</th>
+            {% endfor %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for record in dataset %}
+        <tr>
+            {% for column in columns %}
+            <td>{{ record|get_item:column }}</td>
+            {% endfor %}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
 </body>
 </html>
