@@ -25,16 +25,18 @@
             </a>
             </nav>
         <h1>Page pour regarder les fichiers</h1>
-        <div id="menu_file">
+        <div id="menu">
             <ul>
-                <a href="" title="file_csv">CSV</a>
-                <ul>
-                    {% for file in files %}
-                        <li>
-                            <a href=""title='{{ file.metadata.filename }}'>Nom du fichier : {{ file.metadata.filename }}</a>
-                        </li>
-                    {%endfor%}
-                </ul>
+                <li>
+                    <a href="#" class="menu_csv">CSV</a>
+                    <ul>
+                        {% for file in files %}
+                            <li class="sous_menu">
+                                <a href=""title='{{ file.metadata.filename }}'>Nom du fichier : {{ file.metadata.filename }}</a>
+                            </li>
+                        {%endfor%}
+                    </ul>
+                </li>
             </ul>
         </div>
 

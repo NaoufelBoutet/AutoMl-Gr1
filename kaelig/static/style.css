@@ -42,36 +42,41 @@
     position:relative;
 }
 
-#menu_file ul
-{
-    margin: 0;
-    padding: 0;
+.menu {
+    width: 200px;
+    background-color: #333;
+    padding: 10px;
+    border-radius: 5px;
 }
 
-#menu_file li
-{
+.menu ul {
     list-style-type: none;
-    float: left;
-    position: relative;
+    padding: 0;
+    margin: 0;
 }
- 
-#menu_file ul li a
-{
-    color:#000;
+
+.menu_csv {
+    color: white;
     text-decoration: none;
-    width:150px;
-    height:30px;
     display: block;
-    text-align: center;
+    padding: 10px;
+    border-radius: 5px;
+    transition: background-color 0.3s;
 }
- 
-#menu_file ul ul
-{
-    position: absolute;
-    top: 30px;
-    visibility: hidden;
- 
+
+.menu_csv:hover {
+    background-color: #575757;
 }
- 
-#menu_file ul li:hover ul
-{visibility: visible;}
+
+.sousmenu {
+    display: none; /* Masquer le sous-menu par défaut */
+    padding-left: 20px; /* Indentation pour le sous-menu */
+}
+
+.sousmenu li a {
+    background-color: #444;
+}
+
+.sousmenu li a:hover {
+    background-color: #555;
+}
