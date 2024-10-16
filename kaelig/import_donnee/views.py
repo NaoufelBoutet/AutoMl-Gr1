@@ -7,7 +7,6 @@ from .forms import UploadFileForm
 from django.urls import reverse
 
 def home_data(request,username):
-    print('oooooooooooooooooooooui111111111111111111')
     return render(request, 'home_data.html',{'username' : username})
 
 def result_csv(request,username):
@@ -18,7 +17,7 @@ def test_csv(username, filename):
     db, client = get_db_mongo('Auto_ML','localhost',27017)
     fs = gridfs.GridFS(db)
     file = fs.find({"metadata.username": username,'metadata.filename':filename})
-    if file.count()==0:
+    if len(list(file))==0:
         return None
     else:
         return 1
@@ -26,33 +25,31 @@ def test_csv(username, filename):
 def upload_csv(request, username):
     db,client = get_db_mongo('Auto_ML','localhost',27017)
     fs = gridfs.GridFS(db)
-    print('ouuuuuuuuuuuuuuuuuui')
 
     if request.method == 'POST':
+        print(request.FILES['csv_file'].name)
         form = UploadFileForm(request.POST, request.FILES)
         if form.is_valid():
-        # Récupérer le fichier téléversé
             csv_file = request.FILES['csv_file']
 
-            # S'assurer que c'est bien un fichier CS
             if not test_csv(username,csv_file.name):
                 file_id = fs.put(
                     csv_file, 
-                    filename=csv_file.name, 
-                    metadata={"username": username,'filename':csv_file.name}
+                    filename={'csv_file_name':csv_file.name,'username':username}, 
+                    metadata={"username": username,'filename':csv_file.name},
+                    chunkSizeBytes=1048576
                 )
                 client.close()
                 return redirect(reverse('result_csv', kwargs={'username': username}) + f"?message=Le fichier est bien enregistré")
-    
             else:
                 client.close()
                 return redirect(reverse('result_csv', kwargs={'username': username}) + f"?message=Le fichier existe déjà")
         else:
             client.close()
-            return redirect(reverse('result_csv', kwargs={'username': username}) + f"?message=Formulaire non valide")
+            return render(request, 'home_data.html', {'form': form, 'username': username})
     else :
         client.close()
-        return redirect(reverse('result_csv', kwargs={'username': username}) + f"?message=Problème sur la méthode ou la requête")
+        form = UploadFileForm()
 
 
 # Create your views here.
