@@ -26,9 +26,9 @@
             </nav>
         <h1>Page pour regarder les fichiers</h1>
         <li>
-            {%for file in list(files)%}
-                file.metadata.get('filename')
-            {%endfor}
+            {% for file in files %}
+                <p>Nom du fichier : {{ file.metadata.filename }}</p>
+            {%endfor%}
         </li>
 
     </body>
