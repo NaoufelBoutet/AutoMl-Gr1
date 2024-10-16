@@ -1,12 +1,19 @@
-
 {% extends 'Exploration_donnees/base.html' %}
 {% block content %}
 
-<h1> Bonjour à tous!</h1>
-<p>Vous avez {{ utilisateurs|length }} utilisateurs enregistrés.</p>
-<p> Selection d'exemple :
+<!-- Ajout d'un conteneur principal -->
+<div class="container">
+    <h1 class="title">Bonjour !</h1>
+    <p class="welcome-text">Bienvenue dans votre compte DataLab ! </p>
+    
+    <h2>Vous avez <strong>{{ utilisateurs|length }}</strong> fichier(s) dans votre base.</h2>
+    <div class="user-list">
         {% for utilisateur in utilisateurs %}
-            <li>{{ utilisateur.nom|upper  }}</li>
+            <div class="user-card">
+                <h3>{{ utilisateur.nom|upper }}</h3>
+            </div>
         {% endfor %}
-</p>
+    </div>
+</div>
+
 {% endblock %}

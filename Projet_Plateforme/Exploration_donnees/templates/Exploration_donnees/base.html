@@ -2,12 +2,32 @@
 
 <html>
     <head>
-        <title>Exploration des donnees</title>
-        <link rel="stylesheet" href="{% static 'Exploration_donnees/styles.css' %}" />
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>DataLabIA</title>
+        <link rel="stylesheet" href="{% static 'styles.css' %}">
     </head>
     <body>
 
-        {% block content %}{% endblock %}
+        <!-- Bandeau supérieur -->
+        <div class="topnav">
+            <a href="{% url 'analyses' %}">Analyses</a>
+            <a href="{% url 'import_csv' %}">Ajout</a>
+        </div>
+
+        <!-- Contenu principal -->
+        <div class="content">
+            {% block content %}{% endblock %}
+        </div>
+
+        <!-- Bandeau inférieur -->
+        <nav>
+        <div class="footer">
+            <a href="{% url 'contact_us' %}">Nous contacter</a>
+            <a href="{% url 'help' %}">Aide</a>
+            <a href="{% url 'about_us' %}">A propos de nous</a>
+        </div>
+        </nav>
 
     </body>
 </html>

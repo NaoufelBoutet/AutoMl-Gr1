@@ -1,1 +1,90 @@
-*{ background: blueviolet }
+/* Reset et styles de base */
+* {
+    box-sizing: border-box; /* Inclut la bordure et le padding dans la largeur totale de l'élément */
+    margin: 0; /* Supprime la marge par défaut */
+    padding: 0; /* Supprime le padding par défaut */
+}
+
+body {
+    font-family: Arial, sans-serif; /* Police de caractères */
+    line-height: 1.6; /* Hauteur de ligne pour une meilleure lisibilité */
+    background-color: #ee9ad2; /* Fond clair */
+    color: #333333; /* Couleur de texte */
+}
+
+/* Bandeau */
+.header {
+    background-color: blueviolet; /* Couleur de fond du bandeau */
+    color: rgb(177, 19, 19); /* Couleur du texte */
+    padding: 20px; /* Espacement interne */
+    text-align: center; /* Centre le texte */
+    box-shadow: 0 2px 5px rgba(54, 33, 173, 0.1); /* Ombre pour un effet de profondeur */
+}
+
+.header h1 {
+    margin-bottom: 10px; /* Marge inférieure pour séparer le titre du texte */
+}
+
+.header p {
+    font-size: 1.2em; /* Taille de la police pour le paragraphe */
+}
+
+/* Contenu principal */
+.container {
+    max-width: 800px; /* Largeur maximale du conteneur */
+    margin: 20px auto; /* Marge automatique pour centrer horizontalement */
+    padding: 20px; /* Espacement interne */
+    background: yellowgreen; /* Fond blanc pour le conteneur */
+    border-radius: 8px; /* Coins arrondis */
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Ombre pour donner de la profondeur */
+}
+
+/* Styles de formulaire */
+form {
+    display: flex; /* Utilise flexbox pour la mise en page */
+    flex-direction: column; /* Aligne les éléments verticalement */
+}
+
+form input,
+form button {
+    margin: 10px 0; /* Marge supérieure et inférieure pour l'espacement */
+    padding: 10px; /* Espacement interne pour le confort */
+    border: 1px solid #cccccc; /* Bordure */
+    border-radius: 4px; /* Coins arrondis */
+}
+
+/* Styles pour le bouton */
+form button {
+    background-color: blueviolet; /* Couleur de fond du bouton */
+    color: white; /* Couleur du texte du bouton */
+    border: none; /* Supprime la bordure par défaut */
+    cursor: pointer; /* Change le curseur au survol */
+}
+
+form button:hover {
+    background-color: #5e4db6; /* Couleur légèrement plus foncée au survol */
+}
+
+/* Footer */
+.footer {
+    text-align: center; /* Centre le texte dans le pied de page */
+    padding: 10px; /* Espacement interne */
+    margin-top: 20px; /* Marge supérieure pour séparer du contenu principal */
+    font-size: 0.9em; /* Taille de police légèrement plus petite */
+    color: #777; /* Couleur du texte plus claire */
+    background-color: #333; /* Couleur de fond */
+    position: fixed; /* Fixe le pied de page en bas */
+    width: 100%; /* Occupe toute la largeur */
+    bottom: 0; /* Positionne le pied de page en bas */
+}
+
+.footer a {
+    color: #4d11f3; /* Couleur des liens */
+    margin: 0 15px; /* Espacement entre les liens */
+    text-decoration: none; /* Supprime la décoration de lien */
+}
+
+.footer a:hover {
+    color: #3de7c2; /* Change la couleur au survol */
+}
+

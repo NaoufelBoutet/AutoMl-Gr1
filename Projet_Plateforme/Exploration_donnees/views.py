@@ -1,4 +1,4 @@
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render , redirect
 from Exploration_donnees.models import Utilisateurs
 import csv
@@ -6,6 +6,8 @@ import csv
 from .models import Projet
 from .forms import ProjetForm
 import os  # Nécessaire pour gérer les chemins de fichiers
+from django.core.mail import send_mail
+from django.urls import reverse
 
 
 def hello(request):
@@ -42,11 +44,6 @@ def import_csv(request):
 
 # a faire : 
 
-def contact_us(request):
-    return HttpResponse(" Voici un formulaire de contact.")
+def analyses(request):
+    return HttpResponse(request, 'Exploration_donnees/analyses.html')
 
-def about_us(request):
-    return HttpResponse('<h1>À propos de nous </h1> <p>Nous adorons les graphs, les statistiques et les modeles</p>')
-
-def help(request):
-    return HttpResponse(" Aide et Exemples.")
