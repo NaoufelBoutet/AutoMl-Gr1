@@ -14,7 +14,10 @@ def result_csv(request,username):
     return render(request, 'result.html',{'message' : message,'username' : username})
 
 def browse_file(request,username):
-    return render(request, 'browse_file.html',{'username' : username})
+    files=get_file_csv_by_user(username)
+    for file in list(files):
+        print(file)
+    return render(request, 'browse_file.html',{'username' : username,'files' : files})
 
 def test_csv(username, filename):
     db, client = get_db_mongo('Auto_ML','localhost',27017)
@@ -24,6 +27,12 @@ def test_csv(username, filename):
         return None
     else:
         return 1
+    
+def get_file_csv_by_user(username):
+    db, client = get_db_mongo('Auto_ML','localhost',27017)
+    fs = gridfs.GridFS(db)
+    files = fs.find({"metadata.username": username})
+    return files
 
 def upload_csv(request, username):
     db,client = get_db_mongo('Auto_ML','localhost',27017)
