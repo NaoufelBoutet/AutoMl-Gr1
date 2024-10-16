@@ -3,13 +3,16 @@ import csv
 from utils import get_db_mongo
 import pymongo
 import gridfs
+from .forms import UploadFileForm
+from django.urls import reverse
 
 def home_data(request,username):
     print('oooooooooooooooooooooui111111111111111111')
     return render(request, 'home_data.html',{'username' : username})
 
-def result_csv(request,message):
-    return render(request, 'result.html',{'message' : message})
+def result_csv(request,username):
+    message = request.GET.get('message', 'Aucun message fourni')
+    return render(request, 'result.html',{'message' : message,'username' : username})
 
 def test_csv(username, filename):
     db, client = get_db_mongo('Auto_ML','localhost',27017)
@@ -25,33 +28,31 @@ def upload_csv(request, username):
     fs = gridfs.GridFS(db)
     print('ouuuuuuuuuuuuuuuuuui')
 
-    if request.method == 'POST' and request.FILES['csv_file']:
+    if request.method == 'POST':
+        form = UploadFileForm(request.POST, request.FILES)
+        if form.is_valid():
         # Récupérer le fichier téléversé
-        csv_file = request.FILES['csv_file']
+            csv_file = request.FILES['csv_file']
 
-        # S'assurer que c'est bien un fichier CSV
-        if not csv_file.name.endswith('.csv'):
-            return redirect(request, 'result_csv', {'message': 'Ce fichier n\'est pas un CSV'})
-
-        if not test_csv(username,csv_file.name):
-            file_id = fs.put(
-                csv_file, 
-                filename=csv_file.name, 
-                metadata={"username": username,'filename':csv_file.name}
-            )
-
+            # S'assurer que c'est bien un fichier CS
+            if not test_csv(username,csv_file.name):
+                file_id = fs.put(
+                    csv_file, 
+                    filename=csv_file.name, 
+                    metadata={"username": username,'filename':csv_file.name}
+                )
+                client.close()
+                return redirect(reverse('result_csv', kwargs={'username': username}) + f"?message=Le fichier est bien enregistré")
+    
+            else:
+                client.close()
+                return redirect(reverse('result_csv', kwargs={'username': username}) + f"?message=Le fichier existe déjà")
         else:
-            return redirect(request, 'result_csv', { 'message': 'le fichier existe deja'})
-        client.close()
-        return redirect(request, 'result_csv', { 'message': 'le fichier est bien enregistrer'})
+            client.close()
+            return redirect(reverse('result_csv', kwargs={'username': username}) + f"?message=Formulaire non valide")
     else :
-        return redirect(request, 'result_csv', { 'message': 'probleme sur la methode ou la requete'})
-
-
-
-
-
-
+        client.close()
+        return redirect(reverse('result_csv', kwargs={'username': username}) + f"?message=Problème sur la méthode ou la requête")
 
 
 # Create your views here.

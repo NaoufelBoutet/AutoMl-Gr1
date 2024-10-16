@@ -28,9 +28,9 @@ urlpatterns = [
     path('sign/', auth_user_views.show_sign, name='show_sign'),
     path('users/', auth_user_views.sign_in, name='sign_in'),
     path('connect/',auth_user_views.login, name='login'),
-    path('<str:username>/',autoML_views.espace_personel,name='perso'),
+    path('username=<str:username>/',autoML_views.espace_personel,name='perso'),
     path('sucess/',auth_user_views.success, name='success'),    
-    path('<str:username>/import_data_home/', import_donnee_views.home_data, name='home_data'),
-    path('upload_csv/',import_donnee_views.upload_csv,name='upload_csv'),
-    path('result_csv/',import_donnee_views.result_csv,name='result_csv')
+    path('username=<str:username>/import_data_home/', import_donnee_views.home_data, name='home_data'),
+    path('username=<str:username>/upload_csv/',import_donnee_views.upload_csv,name='upload_csv'),
+    path('username=<str:username>/result_csv/',import_donnee_views.result_csv,name='result_csv')
 ]

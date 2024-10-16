@@ -13,11 +13,20 @@
     </head>
     <body>
         <h1>Bonjour mec !!!!!</h1>
-        <form method="POST" enctype="multipart/form-data" action="{% url 'upload_csv' %}">
+        <form method="POST" enctype="multipart/form-data" action="{% url 'upload_csv' username=username %}">
             {% csrf_token %}
             <label for="csv_file">Télécharger un fichier CSV :</label>
             <input type="file" id="csv_file" name="csv_file" accept=".csv">
             <button type="submit">Uploader</button>
+            {% if form.errors %}
+                <ul>
+                {% for field in form %}
+                    {% for error in field.errors %}
+                        <li>{{ field.label }}: {{ error }}</li>
+                    {% endfor %}
+                {% endfor %}
+                </ul>
+            {% endif %}
         </form>
     </body>
 </html>
