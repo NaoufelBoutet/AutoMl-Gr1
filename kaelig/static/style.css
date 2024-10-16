@@ -41,3 +41,37 @@
     border:4px solid black;
     position:relative;
 }
+
+#menu_file ul
+{
+    margin: 0;
+    padding: 0;
+}
+
+#menu_file li
+{
+    list-style-type: none;
+    float: left;
+    position: relative;
+}
+ 
+#menu_file ul li a
+{
+    color:#000;
+    text-decoration: none;
+    width:150px;
+    height:30px;
+    display: block;
+    text-align: center;
+}
+ 
+#menu_file ul ul
+{
+    position: absolute;
+    top: 30px;
+    visibility: hidden;
+ 
+}
+ 
+#menu_file ul li:hover ul
+{visibility: visible;}
