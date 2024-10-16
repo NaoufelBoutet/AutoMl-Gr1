@@ -15,7 +15,7 @@ def result_csv(request,username):
     message = request.GET.get('message', 'Aucun message fourni')
     return render(request, 'result.html',{'message' : message,'username' : username})
 
-def browse_file(request,username,file_choisi):
+def browse_file(request,username):
     files=list(get_file_csv_by_user(username))
     for file in files:
         print(file.metadata.get('filename'))
@@ -28,6 +28,8 @@ def read_csv(request, username, filename):
     if grid_out:
         file_data = BytesIO(grid_out.read())
         df = pd.read_csv(file_data,sep=',')
+        df_html=df.to_html()
+        return render(request, 'browse_file.html', {'username':username,'table_html': df_html,'file_choisi':filename})
         
 def test_csv(username, filename):
     db, client = get_db_mongo('Auto_ML','localhost',27017)
