@@ -32,5 +32,6 @@ urlpatterns = [
     path('sucess/',auth_user_views.success, name='success'),    
     path('username=<str:username>/import_data_home/', import_donnee_views.home_data, name='home_data'),
     path('username=<str:username>/upload_csv/',import_donnee_views.upload_csv,name='upload_csv'),
-    path('username=<str:username>/result_csv/',import_donnee_views.result_csv,name='result_csv')
+    path('username=<str:username>/result_csv/',import_donnee_views.result_csv,name='result_csv'),
+    path('username=<str:username>/browse_file/',import_donnee_views.browse_file, name='browse_file')
 ]

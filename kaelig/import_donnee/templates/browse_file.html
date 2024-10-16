@@ -1,6 +1,6 @@
 <html>
     <head>
-        <title>Espace perso</title>
+        <title>Espace result</title>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         {% load static %}
@@ -12,27 +12,19 @@
         
     </head>
     <body>
-    <nav class="nav_black">
-        <a href="#" class="a_nav_black">
-            <div class="nav_police_black">
-            HOME
-            </div>
-        </a>
-        <a href="{% url 'home_data' username %}" class="a_nav_black">
-            <div class="nav_police_black">
-            IMPORT FILE
-            </div>
-        </a>
-        <a href="{% url 'browse_file' username %}" class="a_nav_black">
-            <div class="nav_police_black">
-            Browse File
-            </div>
-        </a>
-        </nav>
-
-        <h1>Bonjour </h1>
-
-
+        <nav class="nav_black">
+            <a href="#" class="a_nav_black">
+                <div class="nav_police_black">
+                HOME
+                </div>
+            </a>
+            <a href="{% url 'perso' username %}" class="a_nav_black">
+                <div class="nav_police_black">
+                Espace Perso
+                </div>
+            </a>
+            </nav>
+        <h1>Page pour regarder les fichiers</h1>
 
     </body>
 </html>
