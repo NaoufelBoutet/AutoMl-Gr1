@@ -27,7 +27,7 @@
         <h1>Page pour regarder les fichiers</h1>
         <li>
             {%for file in list(files)%}
-                file
+                file.metadata.get('filename')
             {%endfor}
         </li>
 

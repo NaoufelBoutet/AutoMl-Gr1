@@ -16,7 +16,7 @@ def result_csv(request,username):
 def browse_file(request,username):
     files=get_file_csv_by_user(username)
     for file in list(files):
-        print(file)
+        print(file.metadata.get('filename'))
     return render(request, 'browse_file.html',{'username' : username,'files' : files})
 
 def test_csv(username, filename):
