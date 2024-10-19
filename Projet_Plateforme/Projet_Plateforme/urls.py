@@ -21,7 +21,7 @@ urlpatterns = [
     path('inscriptions/', Authentification_views.inscriptions , name='inscription'),
     path('login/', Authentification_views.login_view, name='login'),  # Utilisation de LoginView
 
-    path('about_us/', polls_views.about_us, name= "about_us"), # aide
+    path('about_us/', polls_views.about_us, name= "about_us"), 
     path('contact_us/', polls_views.contact,name= 'contact_us'),
     path('contact_us/success/', polls_views.success_view, name='contact_success'),
 

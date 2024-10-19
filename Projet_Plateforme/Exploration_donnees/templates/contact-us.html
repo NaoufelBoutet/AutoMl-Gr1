@@ -1,20 +1,13 @@
-{% load static %}
+{% extends 'Exploration_donnees/base.html' %}
+{% block content %}
 
 <html>
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Nous contacter</title>
-        <link rel="stylesheet" href="{% static 'styles.css' %}">
     </head>
     <body>
-
-        <!-- Bandeau supérieur -->
-        <div class="topnav">
-            <a href="{% url 'analyses' %}">Analyses</a>
-            <a href="{% url 'import_csv' %}">Ajout</a>
-            <a href="{% url 'contact_us' %}">Nous contacter</a>
-        </div>
 
         <!-- Contenu principal -->
         <div class="container">
@@ -45,3 +38,4 @@
 
     </body>
 </html>
+{% endblock %}

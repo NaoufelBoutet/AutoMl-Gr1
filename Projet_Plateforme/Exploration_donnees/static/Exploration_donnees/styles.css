@@ -6,15 +6,15 @@
 
 body {
     font-family: Arial, sans-serif; /* Police de caractères */
-    line-height: 1.6; /* Hauteur de ligne pour une meilleure lisibilité */
-    background-color: #ee9ad2; /* Fond clair */
+    line-height: 1.4; /* Hauteur de ligne pour une meilleure lisibilité */
+    background-color: #FFF0F5; /* Fond LavenderBlush*/
     color: #333333; /* Couleur de texte */
 }
 
 /* Bandeau */
 .header {
-    background-color: blueviolet; /* Couleur de fond du bandeau */
-    color: rgb(177, 19, 19); /* Couleur du texte */
+    background-color: DDA0DD; /* Couleur de fond du bandeau : Plum*/
+    color: rgb(196, 190, 190); /* Couleur du texte*/
     padding: 20px; /* Espacement interne */
     text-align: center; /* Centre le texte */
     box-shadow: 0 2px 5px rgba(54, 33, 173, 0.1); /* Ombre pour un effet de profondeur */
@@ -22,10 +22,12 @@ body {
 
 .header h1 {
     margin-bottom: 10px; /* Marge inférieure pour séparer le titre du texte */
+    text-align: center; /* Centre le texte */
 }
 
 .header p {
     font-size: 1.2em; /* Taille de la police pour le paragraphe */
+    text-align: center; /* Centre le texte */
 }
 
 /* Contenu principal */
@@ -36,12 +38,17 @@ body {
     background: yellowgreen; /* Fond blanc pour le conteneur */
     border-radius: 8px; /* Coins arrondis */
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Ombre pour donner de la profondeur */
+    text-align: center; /* Centre le texte */
 }
 
 /* Styles de formulaire */
 form {
     display: flex; /* Utilise flexbox pour la mise en page */
     flex-direction: column; /* Aligne les éléments verticalement */
+    text-align: center; /* Centre le texte */
+    max-width: 400px; /* Largeur maximale du formulaire */
+    margin: 0 auto; /* Marge automatique pour centrer horizontalement */
+
 }
 
 form input,
@@ -65,7 +72,6 @@ form button {
     cursor: pointer; /* Change le curseur au survol */
     font-size: 1em; /* Taille de police légèrement plus petite */
 }
-
 form button:hover {
     background-color: #5e4db6; /* Couleur DES BOUTONS légèrement plus foncée au survol */
 }
@@ -74,7 +80,7 @@ form button:hover {
 .footer {
     text-align: center; /* Centre le texte dans le pied de page */
     padding: 20px; /* Espacement interne */
-    margin-top: 20px; /* Marge supérieure pour séparer du contenu principal */
+    margin-top: 10px; /* Marge supérieure pour séparer du contenu principal */
     font-size: 0.9em; /* Taille de police légèrement plus petite */
     color: #fcfcfc; /* Couleur du texte plus claire */
     background-color: #333; /* Couleur de fond */
@@ -84,11 +90,14 @@ form button:hover {
 }
 
 .footer a {
-    color: #f4f4f7; /* Couleur des liens dans la barre OK/
-    margin: 15px; /* Espacement entre les liens OK /
+    color: #f4f4f7; /* Couleur des liens dans la barre OK*/
+    margin: 15px; /* Espacement entre les liens OK */
     text-decoration: none; /* Supprime la décoration de lien */
 }
 
+.footer a:visited {
+    color: #e948c6; /* Couleur des liens visités dans la barre*/
+}
 .footer a:hover {
-    color: #3de7c2; /* Change la couleur au survol  OK/
+    color: #3de7c2; /* Change la couleur au survol  OK*/
 }

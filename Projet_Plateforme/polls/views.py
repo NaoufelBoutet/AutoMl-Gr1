@@ -10,7 +10,7 @@ from django.urls import reverse
 from django.http import HttpResponse
 
 def about_us(request):
-    return HttpResponse('<h1>À propos de nous </h1> <p>Nous adorons les graphs, les statistiques et les modeles</p>')
+    return render(request, 'About_us.html')
 
 def contact(request):
     if request.method == 'POST':
@@ -35,4 +35,4 @@ def success_view(request):
 
 
 def help(request):
-    return HttpResponse(" Aide et Exemples.")
+    return render(request, 'help.html')

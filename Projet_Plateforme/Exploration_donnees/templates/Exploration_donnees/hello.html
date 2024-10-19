@@ -1,21 +1,15 @@
 
-{% load static %}
+{% extends 'Exploration_donnees/base.html' %}
+{% block content %}
 
 <html>
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>DataLabIA</title>
-        <link rel="stylesheet" href="{% static 'Exploration_donnees/styles.css' %}">
+        <title>DataLab_IA</title>
+       
     </head>
     <body>
-
-        <!-- Bandeau supérieur -->
-        <div class="topnav">
-            <a href="{% url 'analyses' %}">Analyses</a>
-            <a href="{% url 'import_csv' %}">Ajout</a>
-        </div>
-
         <!-- Contenu principal -->
         <div class="content">
             <div class="container">
@@ -23,12 +17,9 @@
                 <p class="welcome-text">Bienvenue dans votre compte DataLab ! </p>
                 
                 <h2>Vous avez <strong>{{ utilisateurs|length }}</strong> fichier(s) dans votre base.</h2>
-                <div class="user-list">
-                    {% for utilisateur in utilisateurs %}
-                        <div class="user-card">
-                            <h3>{{ utilisateur.nom|upper }}</h3>
-                        </div>
-                    {% endfor %}
+                <div class="topnav">
+                    <a href="{% url 'analyses' %}">Analyses</a>
+                    <a href="{% url 'import_csv' %}">Ajout</a>
                 </div>
             </div>
         </div>
@@ -45,3 +36,4 @@
     </body>
 </html>
 
+{% endblock %}

@@ -2,7 +2,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render , redirect
 from Exploration_donnees.models import Utilisateurs
 import csv
-#from django.contrib import messages
+from django.contrib import messages
 from .models import Projet
 from .forms import ProjetForm
 import os  # Nécessaire pour gérer les chemins de fichiers
@@ -14,14 +14,12 @@ def hello(request):
     utilisateurs = Utilisateurs.objects.all()
     return render(request, 'Exploration_donnees/hello.html', {'utilisateurs': utilisateurs})
 
-from django.contrib import messages
-
 def import_csv(request):
     if request.method == 'POST':
         form = ProjetForm(request.POST, request.FILES)
         if form.is_valid():
             projet = form.save()
-            messages.success(request, 'Fichier téléchargé avec succès')
+            messages.success(request, 'Fichier téléchargé avec succès. ')
             csv_path = projet.csv_file.path
             if not csv_path.endswith('.csv'):
                 messages.error(request, 'Ce fichier n\'est pas un fichier CSV.')
@@ -32,7 +30,7 @@ def import_csv(request):
                     next(reader)
                     for row in reader:
                         print(f"Nom du projet : {row[0]}")
-                messages.success(request, 'Fichier CSV importé avec succès !')
+                messages.success(request, 'Félicitation !')
                 return redirect('import_csv')
             except Exception as e:
                 messages.error(request, f'Erreur lors de l\'importation : {str(e)}')
@@ -45,5 +43,4 @@ def import_csv(request):
 # a faire : 
 
 def analyses(request):
-    return HttpResponse(request, 'Exploration_donnees/analyses.html')
-
+    return render(request, 'analyses.html')
