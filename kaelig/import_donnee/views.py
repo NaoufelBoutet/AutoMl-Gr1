@@ -32,12 +32,17 @@ def read_csv(request, username, filename):
         colonne = df.shape[1]
         nb_nul = df.isnull().sum().to_frame().to_html()
         nb_colonne_double = df.duplicated().sum()
-        print( nb_nul)
-        return render(request, 'stat_file.html', {'username':username,'df_file': df,'file_choisi':filename,'ligne':ligne,'colonne':colonne,
+        return render(request, 'stat_file.html', {'username':username,'file_choisi':filename,'ligne':ligne,'colonne':colonne,
                                                   'nb_nul':nb_nul,'nb_colonne_double':nb_colonne_double})
 
-def df_to_html(request, df, username, filename):
-    table_html=df.to_html()
+def df_to_html(request,username, filename):
+    db, client = get_db_mongo('Auto_ML','localhost',27017)
+    fs = gridfs.GridFS(db)
+    grid_out = fs.find_one({"metadata.username": username, 'metadata.filename': filename})
+    if grid_out:
+        file_data = BytesIO(grid_out.read())
+        df = pd.read_csv(file_data,sep=',')
+        table_html=df.to_html()
     return render(request, 'df_html.html', {'username':username,'table_html': table_html,'file_choisi':filename})
         
 def test_csv(username, filename):
