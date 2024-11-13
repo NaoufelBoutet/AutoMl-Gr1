@@ -27,7 +27,7 @@ def read_csv(request, username, filename):
     grid_out = fs.find_one({"metadata.username": username, 'metadata.filename': filename})
     if grid_out:
         file_data = BytesIO(grid_out.read())
-        df = pd.read_csv(file_data,sep=',')
+        df = pd.read_csv(file_data,sep=',',on_bad_lines='warn')
         ligne = df.shape[0]
         colonne = df.shape[1]
         nb_nul = df.isnull().sum().to_frame().to_html()
@@ -41,7 +41,7 @@ def df_to_html(request,username, filename):
     grid_out = fs.find_one({"metadata.username": username, 'metadata.filename': filename})
     if grid_out:
         file_data = BytesIO(grid_out.read())
-        df = pd.read_csv(file_data,sep=',')
+        df = pd.read_csv(file_data,sep=',',on_bad_lines='warn')
         table_html=df.to_html(classes='display',table_id="dataframe-table",index=False)
     return render(request, 'df_html.html', {'username':username,'table_html': table_html,'file_choisi':filename})
         
