@@ -5,6 +5,57 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Accueil</title>
+    <style>
+        /* Centrer le contenu pour les autres tableaux */
+        .table-container {
+            width: 80%;  /* Largeur maximale du tableau */
+            margin: 20px auto;  /* Centrer horizontalement */
+            border: 1px solid #ddd;
+            padding: 10px;
+        }
+
+        /* Style des tableaux */
+        .table-container table {
+            width: 100%;  /* Le tableau occupe toute la largeur de son conteneur */
+            border-collapse: collapse;
+        }
+
+        /* Style des cellules des tableaux */
+        .table-container th, .table-container td {
+            padding: 8px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+
+        .table-container caption {
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        /* Pour le dataset avec barre de défilement */
+        .dataset-table-container {
+            width: 100%; /* Occupation complète de la largeur */
+            overflow-x: auto; /* Permet le défilement horizontal */
+            overflow-y: auto; /* Permet le défilement vertical */
+            max-height: 400px; /* Hauteur maximale */
+            border: 1px solid #ddd;
+            margin-top: 20px;
+        }
+
+        .dataset-table-container table {
+            min-width: 1500px; /* Assure que le tableau ne soit pas trop étroit */
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .dataset-table-container th, .dataset-table-container td {
+            padding: 8px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+
+    </style>
 </head>
 <body>
     <nav>
@@ -24,7 +75,6 @@
         {{ form.as_p }}
         <button type="submit">Télécharger</button>
     </form>
-    
 
     <form method="post" action="{% url 'afficher_dataset' %}">
         {% csrf_token %}
@@ -39,25 +89,91 @@
     </form>
 
     {% if dataset %}
-<h2>Données du Dataset: </h2>
-<table>
-    <thead>
-        <tr>
-            {% for column in columns %}
-            <th>{{ column }}</th>
+    <h2>Données du Dataset: {{ dataset_name }}</h2>
+    <!-- Conteneur du dataset avec barre de défilement -->
+    <div class="dataset-table-container">
+        <table>
+            <thead>
+                <tr>
+                    {% for column in columns %}
+                    <th>{{ column }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for record in dataset %}
+                <tr>
+                    {% for column in columns %}
+                    <td>{{ record|get_item:column }}</td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Formulaire pour supprimer le dataset -->
+    <form method="post" action="{% url 'supprimer_dataset' %}">
+        {% csrf_token %}
+        <input type="hidden" name="dataset_name" value="{{ dataset_name }}">
+        <button type="submit" onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce dataset ?')">Supprimer ce dataset</button>
+    </form>
+    {% endif %}
+
+    {% if dataset %}
+    <h3>Informations sur le Dataset :</h3>
+    
+    <!-- Table des valeurs manquantes -->
+    <div class="table-container">
+        <table>
+            <caption>Tableau des Valeurs Manquantes par Colomnes</caption>
+            {% for column, missing_value in missing_values.items %}
+            <tr>
+                <td>{{ column }}</td>
+                <td>{{ missing_value }}</td>
+            </tr>
             {% endfor %}
-        </tr>
-    </thead>
-    <tbody>
-        {% for record in dataset %}
-        <tr>
-            {% for column in columns %}
-            <td>{{ record|get_item:column }}</td>
+        </table>
+    </div>
+    
+    <!-- Table des statistiques descriptives -->
+    <div class="table-container">
+        <table>
+            <caption>Tableau des Statistiques Descriptives</caption>
+            <thead>
+                <tr>
+                    <th>Colonne</th>
+                    {% for stat_name in describe_stats.columns %}
+                    <th>{{ stat_name }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for column, stats in describe_stats.iterrows %}
+                <tr>
+                    <td>{{ column }}</td>
+                    {% for stat_value in stats %}
+                    <td>{{ stat_value }}</td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- Table des types de données -->
+    <div class="table-container">
+        <table>
+            <caption>Tableau des Types des Données par Colomnes</caption>
+            {% for column, dtype in column_types.items %}
+            <tr>
+                <td>{{ column }}</td>
+                <td>{{ dtype }}</td>
+            </tr>
             {% endfor %}
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
-{% endif %}
+        </table>
+    </div>
+
+    {% endif %}
 </body>
 </html>

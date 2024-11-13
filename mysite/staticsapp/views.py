@@ -74,7 +74,7 @@ def accueil(request):
 
     MongoDict['client'].close()
     return render(request, 'accueil.html', {'form': form, 'dataset_list': dataset_list})
-
+@login_required
 def afficher_dataset(request):
     MongoDict = bddMongoCon.MongoConnexion()
     if request.method == 'POST':
@@ -83,6 +83,13 @@ def afficher_dataset(request):
             dataset = MongoDict["coll"].find_one({'user_id': request.user.id, 'dataset_name': dataset_name})
 
             if dataset:
+                df = pd.DataFrame(dataset['data'])
+                missing_values = df.isnull().sum().to_dict()
+                print(missing_values)
+                describe_stats = df.describe().T
+                
+                column_types = df.dtypes.apply(str).to_dict()
+               
                 # Récupérer les colonnes
                 columns = dataset['columns'] if 'columns' in dataset else []
 
@@ -93,7 +100,26 @@ def afficher_dataset(request):
             'dataset': dataset['data'], 
             'columns': columns,
             'dataset_name': dataset_name,  # Ajoute cette ligne pour passer le nom du dataset
-            'dataset_list': [ds['dataset_name'] for ds in MongoDict["coll"].find({'user_id': request.user.id})]
+            'dataset_list': [ds['dataset_name'] for ds in MongoDict["coll"].find({'user_id': request.user.id})],
+            'missing_values': missing_values,
+            'describe_stats': describe_stats,
+            'column_types': column_types,
         })
     MongoDict['client'].close()
     return redirect('accueil')
+
+@login_required
+def supprimer_dataset(request):
+    if request.method == 'POST':
+        dataset_name = request.POST.get('dataset_name')
+        
+        if dataset_name:
+            MongoDict = bddMongoCon.MongoConnexion()
+
+            # Supprimer le dataset de la base de données
+            result = MongoDict["coll"].delete_one({'user_id': request.user.id, 'dataset_name': dataset_name})
+            
+            
+            MongoDict['client'].close()
+
+        return redirect('accueil')  # Rediriger vers la page d'accueil après la suppression

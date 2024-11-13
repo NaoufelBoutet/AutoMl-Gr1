@@ -26,6 +26,7 @@ urlpatterns = [
     path('', staticsviews.accueil , name='accueil'),
     path('accueil/', staticsviews.accueil , name='accueil'),
     path('deconnexion/', authviews.deconnexion , name='deconnexion'),
-    path('afficher_dataset/', staticsviews.afficher_dataset, name='afficher_dataset')
+    path('afficher_dataset/', staticsviews.afficher_dataset, name='afficher_dataset'),
+    path('supprimer_dataset/', staticsviews.supprimer_dataset, name='supprimer_dataset')
     
 ]
