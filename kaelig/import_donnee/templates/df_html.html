@@ -28,8 +28,9 @@
 
         <h1>Tableau Pandas</h1>
         <div>
-            <!-- Affichage du tableau HTML avec DataTables -->
-            {{ table_html|safe }}
+            <table id="dataframe-table" class="display">
+                {{ table_html|safe }}
+            </table>
         </div>
 
         <!-- Initialisation de DataTables -->
