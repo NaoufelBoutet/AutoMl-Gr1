@@ -42,7 +42,8 @@ def df_to_html(request,username, filename):
     if grid_out:
         file_data = BytesIO(grid_out.read())
         df = pd.read_csv(file_data,sep=',')
-        table_html=df.to_html(classes='display')
+        table_html=df.to_html(classes='display',index=False)
+        print(table_html)
     return render(request, 'df_html.html', {'username':username,'table_html': table_html,'file_choisi':filename})
         
 def test_csv(username, filename):
