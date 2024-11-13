@@ -4,6 +4,7 @@ Laurence Berville
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -108,6 +109,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = os.path.join('Projet_Plateforme\Exploration_donnees\static\datasets')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
@@ -116,7 +118,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Configuration pour les données
 MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR /'media'
+
 
 LOGIN_URL = 'login'  # Nom de la vue pour la connexion
 LOGIN_REDIRECT_URL = 'hello'  # Page où l'utilisateur est redirigé après connexion

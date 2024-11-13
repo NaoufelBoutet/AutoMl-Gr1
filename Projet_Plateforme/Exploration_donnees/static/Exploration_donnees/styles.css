@@ -9,6 +9,8 @@ body {
     line-height: 1.4; /* Hauteur de ligne pour une meilleure lisibilité */
     background-color: #FFF0F5; /* Fond LavenderBlush*/
     color: #333333; /* Couleur de texte */
+    margin: 0; /* Supprime la marge par défaut */
+    padding: 0; /* Supprime le padding par défaut */
 }
 
 /* Bandeau */
@@ -32,10 +34,10 @@ body {
 
 /* Contenu principal */
 .container {
-    max-width: 800px; /* Largeur maximale du conteneur */
+    max-width: 600px; /* Largeur maximale du conteneur */
     margin: 20px auto; /* Marge automatique pour centrer horizontalement */
     padding: 20px; /* Espacement interne */
-    background: yellowgreen; /* Fond blanc pour le conteneur */
+    background: rgb(178, 174, 201); /* Fond blanc pour le conteneur */
     border-radius: 8px; /* Coins arrondis */
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Ombre pour donner de la profondeur */
     text-align: center; /* Centre le texte */
@@ -79,9 +81,9 @@ form button:hover {
 /* Footer */
 .footer {
     text-align: center; /* Centre le texte dans le pied de page */
-    padding: 20px; /* Espacement interne */
+    padding: 15 px 20px; /* Espacement interne */
     margin-top: 10px; /* Marge supérieure pour séparer du contenu principal */
-    font-size: 0.9em; /* Taille de police légèrement plus petite */
+    font-size: 0.7em; /* Taille de police légèrement plus petite */
     color: #fcfcfc; /* Couleur du texte plus claire */
     background-color: #333; /* Couleur de fond */
     position: fixed; /* Fixe le pied de page en bas */

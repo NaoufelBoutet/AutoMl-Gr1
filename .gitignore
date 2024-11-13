@@ -1,6 +1,7 @@
 # Data
 *.csv
 media/
+datasets/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

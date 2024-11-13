@@ -11,6 +11,10 @@
 <body>
     <h2>Importer un fichier : </h2>
 
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Importer</button>
     <!-- Affichage des messages d'erreur/succès -->
     {% if messages %}
         <ul>
@@ -18,12 +22,15 @@
                 <li{{ message.tags }}>{{ message }}</li>
             {% endfor %}
         </ul>
-    {% endif %}
 
-    <form method="POST" enctype="multipart/form-data">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Importer</button>
+    {% endif %}
+    
+    <div class="align-left">
+        {% autoescape off %}
+        {{ data }}
+        {% endautoescape %}
+    </div>
+
     </form>
 </body>
 </html>
