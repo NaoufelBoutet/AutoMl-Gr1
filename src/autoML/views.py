@@ -14,6 +14,7 @@ def home(request):
     return render(request, 'accueil.html')
 
 @login_required
-def espace_personel(request,username:str):
+def espace_personel(request):
+    username=request.user.username
     return render(request, 'espace_perso.html',{'username': username})
 

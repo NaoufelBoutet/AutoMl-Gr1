@@ -10,11 +10,13 @@ from io import BytesIO
 from django.contrib.auth.decorators import login_required
 
 @login_required
-def home_data(request,username):
+def home_data(request):
+    username=request.user.username
     return render(request, 'home_data.html',{'username' : username})
 
 @login_required
-def result_csv(request,username):
+def result_csv(request):
+    username=request.user.username
     message = request.GET.get('message', 'Aucun message fourni')
     return render(request, 'result.html',{'message' : message,'username' : username})
 
@@ -28,7 +30,8 @@ def browse_file(request):
     return render(request, 'browse_file.html',{'username' : username,'files' : files})
 
 @login_required
-def read_csv(request, username, filename):
+def read_csv(request,  filename):
+    username=request.user.username
     db, client = get_db_mongo('Auto_ML','localhost',27017)
     fs = gridfs.GridFS(db)
     grid_out = fs.find_one({"metadata.username": username, 'metadata.filename': filename})
@@ -43,7 +46,8 @@ def read_csv(request, username, filename):
                                                   'nb_nul':nb_nul,'nb_colonne_double':nb_colonne_double})
 
 @login_required
-def df_to_html(request,username, filename):
+def df_to_html(request, filename):
+    username=request.user.username
     db, client = get_db_mongo('Auto_ML','localhost',27017)
     fs = gridfs.GridFS(db)
     grid_out = fs.find_one({"metadata.username": username, 'metadata.filename': filename})
@@ -68,7 +72,8 @@ def get_file_csv_by_user(username):
     files = fs.find({"metadata.username": username})
     return files
 
-def upload_csv(request, username):
+def upload_csv(request):
+    username=request.user.username
     db,client = get_db_mongo('Auto_ML','localhost',27017)
     fs = gridfs.GridFS(db)
 
