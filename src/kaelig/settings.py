@@ -131,3 +131,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'  # ou autre backend de session
+SESSION_COOKIE_SECURE = True  # Assurez-vous que les cookies de session sont sécurisés en HTTPS
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True

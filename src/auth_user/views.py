@@ -4,6 +4,7 @@ from django.contrib import messages
 from .forms import UserForm
 from django.http import HttpResponse
 from django.contrib.auth import authenticate,login as auth_login
+from utils import get_db_mongo
 
 def show_login(request):
     return render(request, 'login.html')
@@ -24,6 +25,11 @@ def sign_in(request):
                 user = User.objects.create_user(username=username, password=password)
                 user.save()
                 messages.success(request, "Utilisateur créé avec succès.")
+                db,client = get_db_mongo('Auto_ML','localhost',27017)
+                collection = db['User']
+                collection.insert_one({'username':username,
+                                         'id':user.id,
+                                         'projet':[]})
                 return redirect('show_login')
         else:
             return HttpResponse("Hello, World!")

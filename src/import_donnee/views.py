@@ -7,20 +7,27 @@ from .forms import UploadFileForm
 from django.urls import reverse
 import pandas as pd
 from io import BytesIO
+from django.contrib.auth.decorators import login_required
 
+@login_required
 def home_data(request,username):
     return render(request, 'home_data.html',{'username' : username})
 
+@login_required
 def result_csv(request,username):
     message = request.GET.get('message', 'Aucun message fourni')
     return render(request, 'result.html',{'message' : message,'username' : username})
 
-def browse_file(request,username):
+@login_required
+def browse_file(request):
+    username=request.user.username
+    print(username)
     files=list(get_file_csv_by_user(username))
     for file in files:
         print(file.metadata.get('filename'))
     return render(request, 'browse_file.html',{'username' : username,'files' : files})
 
+@login_required
 def read_csv(request, username, filename):
     db, client = get_db_mongo('Auto_ML','localhost',27017)
     fs = gridfs.GridFS(db)
@@ -35,6 +42,7 @@ def read_csv(request, username, filename):
         return render(request, 'stat_file.html', {'username':username,'file_choisi':filename,'ligne':ligne,'colonne':colonne,
                                                   'nb_nul':nb_nul,'nb_colonne_double':nb_colonne_double})
 
+@login_required
 def df_to_html(request,username, filename):
     db, client = get_db_mongo('Auto_ML','localhost',27017)
     fs = gridfs.GridFS(db)
