@@ -1,0 +1,17 @@
+<html></html>
+    <head> 
+    </head>
+    <body>
+        <h1>Create User</h1>
+        <form action="/users/" method="post">
+            {% csrf_token %}
+            <label for="username">Username:</label><br>
+            <input type="text" id="username" name="username" required><br>
+            <label for="password">Password:</label><br>
+            <input type="password" id="password" name="password" required><br><br>
+            <input type="submit" value="Submit">
+        </form>
+        <div><a href="{% url 'home'%}">Homepage</a></div>
+        <div><a href="{% url 'show_login'%}">Déja un compte ?</a></div>
+    </body>
+</html>

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>AutoML</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+{% load static %}
+<script src="{% static 'scripts.js' %}"></script>
+<link rel="stylesheet" href="{% static 'style.css' %}">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet">
+
+</head>
+<body>
+
+
+<!-- Navbar -->
+  <nav class="nav_black">
+    <a href="#" class="a_nav_black">
+      <div class="nav_police_black">
+      HOME
+      </div>
+    </a>
+    <a href="{% url 'show_sign'%}" class="a_nav_black">
+      <div class="nav_police_black">
+        SIGN IN
+      </div>
+    </a>
+    <a href="{% url 'show_login'%}" class="a_nav_black">
+      <div class="nav_police_black">
+        LOG IN
+      </div>
+    </a>
+  </nav>
+
+  </br>
+  <span draggable="true" class="test" id="object_draggable">aaa
+  </span>
+
+
+  </br></br></br></br>
+  <div id='zone_drag' class="test_place">
+  </div>
+
+
+<!-- Footer -->
+  <footer class="w3-container w3-padding-64 w3-center w3-opacity w3-light-grey w3-xlarge">
+    <i class="fa fa-facebook-official w3-hover-opacity"></i>
+    <i class="fa fa-instagram w3-hover-opacity"></i>
+    <i class="fa fa-snapchat w3-hover-opacity"></i>
+    <i class="fa fa-pinterest-p w3-hover-opacity"></i>
+    <i class="fa fa-twitter w3-hover-opacity"></i>
+    <i class="fa fa-linkedin w3-hover-opacity"></i>
+    <p class="w3-medium">Powered by <a href="https://www.w3schools.com/w3css/default.asp" target="_blank">w3.css</a></p>
+  </footer>
+
+
+</body>
+</html>

@@ -83,9 +83,13 @@ def afficher_dataset(request):
             dataset = MongoDict["coll"].find_one({'user_id': request.user.id, 'dataset_name': dataset_name})
 
             if dataset:
+                
                 df = pd.DataFrame(dataset['data'])
+                
+                request.session['dataset'] = df.to_json()
+
                 missing_values = df.isnull().sum().to_dict()
-                print(missing_values)
+                
                 describe_stats = df.describe().T
                 
                 column_types = df.dtypes.apply(str).to_dict()
@@ -96,10 +100,10 @@ def afficher_dataset(request):
                 # Renvoie la liste complète des datasets
                 
                 return render(request, 'accueil.html', {
-            'form': forms.FileUploadForm(),  # Toujours renvoyer le formulaire
+            'form': forms.FileUploadForm(),  
             'dataset': dataset['data'], 
             'columns': columns,
-            'dataset_name': dataset_name,  # Ajoute cette ligne pour passer le nom du dataset
+            'dataset_name': dataset_name,  
             'dataset_list': [ds['dataset_name'] for ds in MongoDict["coll"].find({'user_id': request.user.id})],
             'missing_values': missing_values,
             'describe_stats': describe_stats,
@@ -122,4 +126,15 @@ def supprimer_dataset(request):
             
             MongoDict['client'].close()
 
-        return redirect('accueil')  # Rediriger vers la page d'accueil après la suppression
+        return redirect('accueil')  
+    
+@login_required   
+def nettoyage_dataset(request):
+    if request.method == "POST":
+        dataset_json = request.session.get('dataset')
+        dataset = pd.read_json(dataset_json)
+        print(dataset)
+        
+        
+        return render(request, 'data_cleanning.html',{"dataset":dataset})
+      

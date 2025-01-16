@@ -6,7 +6,7 @@
     <title>Connexion</title>
 </head>
 <body>
-    <h1>connexion</h1>
+    
     <nav>
         
             <a href="{% url 'accueil' %}">Accueil</a>
@@ -21,6 +21,7 @@
             {% endif %}
         
     </nav>
+    <h1>connexion</h1>
     <form method="post">
         {% csrf_token %}
         {{ form.non_field_errors }}

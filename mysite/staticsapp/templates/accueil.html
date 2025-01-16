@@ -75,6 +75,8 @@
         {{ form.as_p }}
         <button type="submit">Télécharger</button>
     </form>
+</br>
+    
 
     <form method="post" action="{% url 'afficher_dataset' %}">
         {% csrf_token %}
@@ -87,9 +89,20 @@
         </select>
         <button type="submit">Afficher</button>
     </form>
-
+</br>
     {% if dataset %}
-    <h2>Données du Dataset: {{ dataset_name }}</h2>
+    <form method="post" action="{% url 'supprimer_dataset' %}">
+        {% csrf_token %}
+        <input type="hidden" name="dataset_name" value="{{ dataset_name }}">
+        <button type="submit" onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce dataset ?')">Supprimer ce dataset</button>
+    </form>
+</br>
+    <form method="post" action="{% url 'nettoyage_dataset' %}">
+        {% csrf_token %}
+        <button type="submit">C'est parti pour le nettoyage!</button>
+    </form>
+
+    <h2 style="text-align: center;">Données du Dataset: {{ dataset_name }}</h2>
     <!-- Conteneur du dataset avec barre de défilement -->
     <div class="dataset-table-container">
         <table>
@@ -112,16 +125,12 @@
         </table>
     </div>
 
-    <!-- Formulaire pour supprimer le dataset -->
-    <form method="post" action="{% url 'supprimer_dataset' %}">
-        {% csrf_token %}
-        <input type="hidden" name="dataset_name" value="{{ dataset_name }}">
-        <button type="submit" onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce dataset ?')">Supprimer ce dataset</button>
-    </form>
+    
+    
     {% endif %}
 
     {% if dataset %}
-    <h3>Informations sur le Dataset :</h3>
+    <h3 style="text-align: center;">Informations sur le Dataset :</h3>
     
     <!-- Table des valeurs manquantes -->
     <div class="table-container">
