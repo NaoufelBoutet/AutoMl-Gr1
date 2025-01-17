@@ -18,11 +18,18 @@ def home_data(request):
 @login_required
 def browse_file(request):
     username=request.user.username
-    print(username)
+    
     files=list(get_file_csv_by_user(username))
     for file in files:
         print(file.metadata.get('filename'))
     return render(request, 'browse_file.html',{'username' : username,'files' : files})
+
+@login_required
+def project(request):
+    username=request.user.username
+    id=request.user.id
+    list_project=list(get_project_by_user(username,id)) 
+    return render(request, 'project.html',{'username' : username,'projects' : list_project})
 
 @login_required
 def read_csv(request,  filename):
@@ -60,6 +67,13 @@ def test_csv(username, filename):
         return None
     else:
         return 1
+    
+def get_project_by_user(username,id):
+    db, client = get_db_mongo('Auto_ML','localhost',27017)
+    collection = db['User']
+    user_project = collection.find_one({'username':username})
+    return user_project['projet']
+
     
 def get_file_csv_by_user(username):
     db, client = get_db_mongo('Auto_ML','localhost',27017)

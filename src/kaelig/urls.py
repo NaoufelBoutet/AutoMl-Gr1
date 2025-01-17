@@ -33,6 +33,7 @@ urlpatterns = [
     path('home/import_data_home/', import_donnee_views.home_data, name='home_data'),
     path('home/upload_csv/',import_donnee_views.upload_csv,name='upload_csv'),
     path('home/browse_file/',import_donnee_views.browse_file, name='browse_file'),
+    path('home/project/',import_donnee_views.project, name='project'),
     path('home/filename/<str:filename>',import_donnee_views.read_csv,name='read_csv'),
     path('home/filename/<str:filename>/Dataframme',import_donnee_views.df_to_html,name='df_to_html')
 ]
