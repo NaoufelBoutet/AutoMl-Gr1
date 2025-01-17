@@ -13,7 +13,7 @@
     </head>
     <body>
         <nav class="nav_black">
-            <a href="{% url 'home' %}" class="a_nav_black">
+            <a href="{% url 'home'%}" class="a_nav_black">
                 <div class="nav_police_black">
                 HOME
                 </div>
@@ -30,7 +30,7 @@
             </a>
         </nav>
         <h1>Bonjour mec !!!!!</h1>
-        <form method="POST" enctype="multipart/form-data" action="{% url 'upload_csv' username=username %}">
+        <form method="POST" enctype="multipart/form-data" action="{% url 'upload_csv' %}">
             {% csrf_token %}
             <label for="csv_file">Télécharger un fichier CSV :</label>
             <input type="file" id="csv_file" name="csv_file" accept=".csv">

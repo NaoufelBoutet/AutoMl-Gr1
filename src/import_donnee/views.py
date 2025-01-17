@@ -14,11 +14,6 @@ def home_data(request):
     username=request.user.username
     return render(request, 'home_data.html',{'username' : username})
 
-@login_required
-def result_csv(request):
-    username=request.user.username
-    message = request.GET.get('message', 'Aucun message fourni')
-    return render(request, 'result.html',{'message' : message,'username' : username})
 
 @login_required
 def browse_file(request):
@@ -91,10 +86,10 @@ def upload_csv(request):
                     chunkSizeBytes=1048576
                 )
                 client.close()
-                return redirect(reverse('result_csv', kwargs={'username': username}) + f"?message=Le fichier est bien enregistré")
+                return render(request,'result.html',{'username': username,'message':"c'est good !"})
             else:
                 client.close()
-                return redirect(reverse('result_csv', kwargs={'username': username}) + f"?message=Le fichier existe déjà")
+                return render(request,'result.html',{'username': username,'message':"ce n'est pas un bon format"})
         else:
             client.close()
             return render(request, 'home_data.html', {'form': form, 'username': username})

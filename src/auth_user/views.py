@@ -46,7 +46,7 @@ def login(request):
             if user is not None:
                 auth_login(request, user)
                 messages.success(request, "Utilisateur créé avec succès.")
-                return redirect('perso', username=username)
+                return redirect('perso')
             else:
                 messages.error(request, "Nom d'utilisateur ou mot de passe incorrect.")
                 return HttpResponse("Hello, World!")

@@ -32,7 +32,7 @@
                     <ul class="sous_menu">
                         {% for file in files %}
                             <li >
-                                <a href="{% url 'read_csv' username=username filename=file.metadata.filename %}" class="element_du_menu">{{ file.metadata.filename }}</a>
+                                <a href="{% url 'read_csv'  filename=file.metadata.filename %}" class="element_du_menu">{{ file.metadata.filename }}</a>
                             </li>
                         {%endfor%}
                     </ul>
