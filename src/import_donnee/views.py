@@ -111,5 +111,17 @@ def upload_csv(request):
         client.close()
         form = UploadFileForm()
 
+def creer_project(request):
+    username=request.user.username
+    db,client = get_db_mongo('Auto_ML','localhost',27017)
+    collection =db['Projet']
+    if request.method == 'POST':
+        nom_projet = request.POST.get("nom_projet")
+        if nom_projet: 
+            collection.insert_one({"nom_projet": nom_projet, "username": request.user.username, 'id_user':request.user.id})
+            
+            return redirect('project', username=username)
+
+
 
 # Create your views here.

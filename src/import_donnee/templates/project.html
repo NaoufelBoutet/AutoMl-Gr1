@@ -30,11 +30,13 @@
                 <li>
                     <a href="#" class="menu_element">CSV</a>
                     <ul class="sous_menu">
-                        {% for projet in projects %}
-                            <li >
-                                projet
-                            </li>
-                        {%endfor%}
+                        {% if projects %}
+                            {% for projet in projects%}
+                                <li >
+                                    projet
+                                </li>
+                            {%endfor%}
+                        {% endif %}
                     </ul>
                 </li>
             </ul>
