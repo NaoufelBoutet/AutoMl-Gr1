@@ -29,6 +29,7 @@ def project(request):
     username=request.user.username
     id=request.user.id
     list_project=list(get_project_by_user(username,id)) 
+    
     return render(request, 'project.html',{'username' : username,'projects' : list_project})
 
 @login_required
@@ -115,12 +116,14 @@ def creer_project(request):
     username=request.user.username
     db,client = get_db_mongo('Auto_ML','localhost',27017)
     collection =db['Projet']
+    collection2= db['User']
     if request.method == 'POST':
         nom_projet = request.POST.get("nom_projet")
         if nom_projet: 
-            collection.insert_one({"nom_projet": nom_projet, "username": request.user.username, 'id_user':request.user.id})
-            
-            return redirect('project', username=username)
+            ajout=collection.insert_one({"nom_projet": nom_projet, "username": request.user.username, 'id_user':request.user.id})
+            project_id = ajout.inserted_id
+            collection2.update_one({"username": request.user.username},{"$push": {"Projet": project_id}})
+            return redirect('project')
 
 
 
