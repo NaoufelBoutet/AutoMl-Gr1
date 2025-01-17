@@ -30,8 +30,8 @@
             </a>
             
         </nav>
-        <h1>Bonjour mec tu est dans la partie projet!!!!!</h1>
-        <form method="POST" enctype="multipart/form-data" action="{% url 'upload_csv' %}">
+        <h1>Bonjour mec tu est dans la partie {{ project_name }}!!!!!</h1>
+        <form method="POST" enctype="multipart/form-data" action="{% url 'upload_csv' project_name %}">
             {% csrf_token %}
             <label for="csv_file">Télécharger un fichier CSV :</label>
             <input type="file" id="csv_file" name="csv_file" accept=".csv">

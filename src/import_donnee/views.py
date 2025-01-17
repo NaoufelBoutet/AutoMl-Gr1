@@ -64,7 +64,7 @@ def df_to_html(request, filename):
 def project(request,project_name):
     username=request.user.username
     db, client = get_db_mongo('Auto_ML','localhost',27017)
-    return render(request,{'username':username,'project_name':project_name})
+    return render(request,'project.html',{'username':username,'project_name':project_name})
 
         
 def test_csv(username, filename):
@@ -96,9 +96,11 @@ def get_file_csv_by_user(username):
     files = fs.find({"metadata.username": username})
     return files
 
-def upload_csv(request):
+@login_required
+def upload_csv(request,project_name):
     username=request.user.username
     db,client = get_db_mongo('Auto_ML','localhost',27017)
+    collection = db['Projet']
     fs = gridfs.GridFS(db)
 
     if request.method == 'POST':
@@ -108,14 +110,20 @@ def upload_csv(request):
             csv_file = request.FILES['csv_file']
 
             if not test_csv(username,csv_file.name):
-                file_id = fs.put(
-                    csv_file, 
-                    filename={'csv_file_name':csv_file.name,'username':username}, 
-                    metadata={"username": username,'filename':csv_file.name},
-                    chunkSizeBytes=1048576
-                )
-                client.close()
-                return render(request,'result.html',{'username': username,'message':"c'est good !"})
+                projet=collection.find_one({'username':username,'nom_projet':project_name})
+                if projet:
+                    file_id = fs.put(
+                        csv_file, 
+                        filename={'csv_file_name':csv_file.name,'username':username}, 
+                        metadata={"username": username,'filename':csv_file.name,'project_name':project_name},
+                        chunkSizeBytes=1048576
+                    )
+                    collection.update_one({'username':username,'nom_projet':project_name},{"$push": {"dataset": csv_file.name}})
+
+                    client.close()
+                    return render(request,'result.html',{'username': username,'message':"c'est good !"})
+                else:
+                    return render(request,'result.html',{'username': username,'message':"projet non trouvé"})
             else:
                 client.close()
                 return render(request,'result.html',{'username': username,'message':"ce n'est pas un bon format"})
@@ -138,7 +146,7 @@ def creer_project(request):
             if test_nom:
                 print('erreur_nom')
             else :
-                ajout=collection.insert_one({"nom_projet": nom_projet, "username": request.user.username, 'id_user':request.user.id})
+                ajout=collection.insert_one({"nom_projet": nom_projet, "username": request.user.username, 'id_user':request.user.id,'data_set':[]})
                 project_id = ajout.inserted_id
                 collection2.update_one({"username": request.user.username},{"$push": {"projet": project_id}})
                 print('doc enregistré')
