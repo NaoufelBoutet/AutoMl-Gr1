@@ -29,7 +29,7 @@ def project(request):
     username=request.user.username
     id=request.user.id
     list_project=list(get_project_by_user(username,id)) 
-    
+
     return render(request, 'project.html',{'username' : username,'projects' : list_project})
 
 @login_required
@@ -122,7 +122,7 @@ def creer_project(request):
         if nom_projet: 
             ajout=collection.insert_one({"nom_projet": nom_projet, "username": request.user.username, 'id_user':request.user.id})
             project_id = ajout.inserted_id
-            collection2.update_one({"username": request.user.username},{"$push": {"Projet": project_id}})
+            collection2.update_one({"username": request.user.username},{"$push": {"projet": project_id}})
             return redirect('project')
 
 
