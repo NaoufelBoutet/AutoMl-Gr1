@@ -31,9 +31,9 @@
                     <a href="#" class="menu_element">CSV</a>
                     <ul class="sous_menu">
                         {% if projects %}
-                            {% for projet in projects%}
+                            {% for project in projects %}
                                 <li >
-                                    projet
+                                    {{projects.nom_projet}}
                                 </li>
                             {%endfor%}
                         {% endif %}

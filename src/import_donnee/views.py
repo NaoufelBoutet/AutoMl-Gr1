@@ -28,8 +28,8 @@ def browse_file(request):
 def project(request):
     username=request.user.username
     id=request.user.id
-    list_project=list(get_project_by_user(username,id)) 
-
+    list_project=get_project_by_user(username,id)
+    print(list_project)
     return render(request, 'project.html',{'username' : username,'projects' : list_project})
 
 @login_required
@@ -71,9 +71,16 @@ def test_csv(username, filename):
     
 def get_project_by_user(username,id):
     db, client = get_db_mongo('Auto_ML','localhost',27017)
-    collection = db['User']
-    user_project = collection.find_one({'username':username})
-    return user_project['projet']
+    collection =db['Projet']
+    collection2= db['User']
+    user_project = collection2.find_one({'username':username})
+    liste=[]
+    if user_project:
+        for id in user_project['projet']:
+            projet=collection.find_one({'_id':id})
+            if projet:
+                liste.append(projet)
+    return liste
 
     
 def get_file_csv_by_user(username):
@@ -120,10 +127,14 @@ def creer_project(request):
     if request.method == 'POST':
         nom_projet = request.POST.get("nom_projet")
         if nom_projet: 
-            ajout=collection.insert_one({"nom_projet": nom_projet, "username": request.user.username, 'id_user':request.user.id})
-            project_id = ajout.inserted_id
-            collection2.update_one({"username": request.user.username},{"$push": {"projet": project_id}})
-            return redirect('project')
+            test_nom = collection.find_one({"nom_projet": nom_projet})
+            if test_nom:
+                print('erreur_nom')
+            else :
+                ajout=collection.insert_one({"nom_projet": nom_projet, "username": request.user.username, 'id_user':request.user.id})
+                project_id = ajout.inserted_id
+                collection2.update_one({"username": request.user.username},{"$push": {"projet": project_id}})
+        return redirect('project')
 
 
 
