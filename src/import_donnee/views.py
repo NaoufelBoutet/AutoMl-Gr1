@@ -25,12 +25,12 @@ def browse_file(request):
     return render(request, 'browse_file.html',{'username' : username,'files' : files})
 
 @login_required
-def project(request):
+def liste_project(request):
     username=request.user.username
     id=request.user.id
     list_project=get_project_by_user(username,id)
     print(list_project)
-    return render(request, 'project.html',{'username' : username,'projects' : list_project})
+    return render(request, 'liste_project.html',{'username' : username,'projects' : list_project})
 
 @login_required
 def read_csv(request,  filename):
@@ -59,6 +59,13 @@ def df_to_html(request, filename):
         df = pd.read_csv(file_data,sep=',',on_bad_lines='warn')
         table_html=df.to_html(classes='display',table_id="dataframe-table",index=False)
     return render(request, 'df_html.html', {'username':username,'table_html': table_html,'file_choisi':filename})
+
+@login_required
+def project(request,project_name):
+    username=request.user.username
+    db, client = get_db_mongo('Auto_ML','localhost',27017)
+    return render(request,{'username':username,'project_name':project_name})
+
         
 def test_csv(username, filename):
     db, client = get_db_mongo('Auto_ML','localhost',27017)
@@ -134,7 +141,8 @@ def creer_project(request):
                 ajout=collection.insert_one({"nom_projet": nom_projet, "username": request.user.username, 'id_user':request.user.id})
                 project_id = ajout.inserted_id
                 collection2.update_one({"username": request.user.username},{"$push": {"projet": project_id}})
-        return redirect('project')
+                print('doc enregistré')
+        return redirect('liste_project')
 
 
 

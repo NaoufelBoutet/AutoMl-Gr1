@@ -1,0 +1,51 @@
+<html>
+    <head>
+        <title>Espace result</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        {% load static %}
+        <script src="{% static 'scripts.js' %}"></script>
+        <link rel="stylesheet" href="{% static 'style.css' %}">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet">
+        
+    </head>
+    <body>
+        <nav class="nav_black">
+            <a href="{% url 'home' %}" class="a_nav_black">
+                <div class="nav_police_black">
+                HOME
+                </div>
+            </a>
+            <a href="{% url 'perso'%}" class="a_nav_black">
+                <div class="nav_police_black">
+                Espace Perso
+                </div>
+            </a>
+            </nav>
+        <h1>Page pour regarder les projet</h1>
+        <div >
+            {% if projects %}
+                <ul>
+                    {% for project in projects %}
+                        <a href="{% url 'project'  project_name=project.nom_projet %}">{{ project.nom_projet }}</a>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p>Aucun projet trouvé.</p>
+            {% endif %}
+        </div>
+        <h1>Page pour créer un projet</h1>
+        <div>
+            <form method="POST"  action="{% url 'creer_project' %}">
+                {% csrf_token %}
+                <label for="projet">Creer un projet :</label>
+                <input type="text" id="nom_projet" name="nom_projet" placeholder="Entrez le nom du projet" required minlength="3" maxlength="100">>
+                <button type="submit">Creer</button>
+            </form>
+
+        </div>
+
+    </body>
+</html>
