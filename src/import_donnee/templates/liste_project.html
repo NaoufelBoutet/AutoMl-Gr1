@@ -29,7 +29,7 @@
             {% if projects %}
                 <ul>
                     {% for project in projects %}
-                        <a href="{% url 'project'  project_name=project.nom_projet df=None%}">{{ project.nom_projet }}</a>
+                        <a href="{% url 'project'  project_name=project.nom_projet filename=None%}">{{ project.nom_projet }}</a>
                     {% endfor %}
                 </ul>
             {% else %}

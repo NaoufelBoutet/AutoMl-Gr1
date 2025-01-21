@@ -38,17 +38,16 @@ def read_csv(username, project_name, filename):
         return {'username':username,'ligne':ligne,'colonne':colonne,
                 'nb_nul':nb_nul,'nb_colonne_double':nb_colonne_double}
 
-@login_required
-def df_to_html(request, filename,project_name):
-    username=request.user.username
+
+def df_to_html(username,filename,project_name):
     db, client = get_db_mongo('Auto_ML','localhost',27017)
     fs = gridfs.GridFS(db)
-    grid_out = fs.find_one({"metadata.username": username, 'metadata.filename': filename})
+    grid_out = fs.find_one({"metadata.username": username, 'metadata.filename': filename,'metadata.project_name':project_name})
     if grid_out:
         file_data = BytesIO(grid_out.read())
         df = pd.read_csv(file_data,sep=',',on_bad_lines='warn')
         table_html=df.to_html(classes='display',table_id="dataframe-table",index=False)
-    return render(request, 'df_html.html', {'username':username,'table_html': table_html,'file_choisi':filename,'project_name':project_name})
+    return table_html
 
 @login_required
 def project(request,project_name,filename):
@@ -59,9 +58,13 @@ def project(request,project_name,filename):
     liste_dataset=projet['data_set']
     if filename=='None':
         filename=None
+        dico_info=None
+        table_html=None
     else:
         dico_info=read_csv(username,project_name,filename)
-    return render(request,'project.html',{'username':username,'project_name':project_name,'liste_dataset':liste_dataset,'filename':filename,'dico_info':dico_info})
+        table_html=df_to_html(username,filename,project_name)
+    return render(request,'project.html',{'username':username,'project_name':project_name,'liste_dataset':liste_dataset,
+                                          'filename':filename,'dico_info':dico_info,'table_html':table_html})
 
         
 def test_csv(username, filename,project_name):
@@ -117,15 +120,15 @@ def upload_csv(request,project_name):
                     collection.update_one({'username':username,'nom_projet':project_name},{"$push": {"data_set": csv_file.name}})
 
                     client.close()
-                    return redirect('project',project_name)
+                    return redirect('project',project_name,None)
                 else:
-                    return redirect('project',project_name)
+                    return redirect('project',project_name,None)
             else:
                 client.close()
-                return redirect('project',project_name)
+                return redirect('project',project_name,None)
         else:
             client.close()
-            return redirect('project',project_name)
+            return redirect('project',project_name,None)
     else :
         client.close()
         form = UploadFileForm()

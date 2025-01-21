@@ -34,6 +34,5 @@ urlpatterns = [
     path('home/<str:project_name>/upload_csv/',import_donnee_views.upload_csv,name='upload_csv'),
     path('home/project/',import_donnee_views.liste_project, name='liste_project'),
     path('home/creer_project/',import_donnee_views.creer_project, name='creer_project'),
-    path('home/project/<str:project_name>/',import_donnee_views.project, name='project'),
-    path('home/<str:project_name>/<str:filename>/Dataframme',import_donnee_views.df_to_html,name='df_to_html')
+    path('home/project/<str:project_name>/<str:filename>',import_donnee_views.project, name='project'),
 ]
