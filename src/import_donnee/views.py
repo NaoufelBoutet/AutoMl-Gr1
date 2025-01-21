@@ -50,21 +50,27 @@ def df_to_html(username,filename,project_name):
     return table_html
 
 @login_required
-def project(request,project_name,filename):
+def project(request,project_name):
     username=request.user.username
+    filename = request.GET.get('filename', None)
+    action = request.GET.get('action', None)
     db, client = get_db_mongo('Auto_ML','localhost',27017)
     collection = db['Projet']
     projet=collection.find_one({'username':username,'nom_projet':project_name})
     liste_dataset=projet['data_set']
-    if filename=='None':
-        filename=None
-        dico_info=None
-        table_html=None
-    else:
-        dico_info=read_csv(username,project_name,filename)
-        table_html=df_to_html(username,filename,project_name)
-    return render(request,'project.html',{'username':username,'project_name':project_name,'liste_dataset':liste_dataset,
-                                          'filename':filename,'dico_info':dico_info,'table_html':table_html})
+    print(action)
+    if action=="action" or action==None:
+        if not filename:
+            filename=None
+            dico_info=None
+            table_html=None
+        else:
+            dico_info=read_csv(username,project_name,filename)
+            table_html=df_to_html(username,filename,project_name)
+        return render(request,'project.html',{'username':username,'project_name':project_name,'liste_dataset':liste_dataset,
+                                            'filename':filename,'dico_info':dico_info,'table_html':table_html})
+    else :
+        
 
         
 def test_csv(username, filename,project_name):

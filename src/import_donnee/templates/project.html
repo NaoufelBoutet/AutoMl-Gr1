@@ -28,7 +28,7 @@
             </a>
             
         </nav>
-        <h1>Bonjour mec tu est dans la partie {{ project_name }}!!!!!</h1>
+        <br><br>
         <form method="POST" enctype="multipart/form-data" action="{% url 'upload_csv' project_name %}">
             {% csrf_token %}
             <label for="csv_file">Télécharger un fichier CSV :</label>
@@ -49,17 +49,24 @@
         </h2>
         <div >
             {% if liste_dataset %}
-                <ul>
-                    {% for dataset in liste_dataset %}
-                        <a href="{% url 'project'  project_name=project_name filename=dataset%}">{{ dataset }}</a>
+            <form method="get" action="{% url 'project' project_name=project_name %}">
+                <label for="dataset-select">Choisissez un dataset :</label>
+                <select id="dataset-select" name="filename" required>
+                    <option value="" disabled selected>-- Sélectionnez un dataset --</option>
+                    {% for filename in liste_dataset %}
+                        <option value="{{ filename }}">{{ filename }}</option>
                     {% endfor %}
-                </ul>
+                </select>
+                <button type="submit" name="action" value="action">Observer le dataset</button>
+                <button type="submit" name="action" value="action1">Modifier le dataset</button>
+            </form>            
             {% else %}
                 <p>Aucun dataset trouvé.</p>
             {% endif %}
         </div>
         {% if dico_info %}
-            <div>
+            <button id="toggle-button">Afficher/Masquer les infos df</button>
+            <div id="toggle-div" style="display:none;" class="project-details">
                 <div>
                     Le df contient {{dico_info.colonne}} colonne
                 </div>
@@ -75,6 +82,7 @@
                 </div>
             </div>
         {%endif%}
+        <br><br>
         <div>
             {%if table_html%}
                 {{ table_html|safe }}
@@ -86,9 +94,17 @@
             $(document).ready(function() {
                 $('#dataframe-table').DataTable({
                     paging: true,
-                    pageLength: 50,
+                    pageLength: 25,
                     lengthMenu: [10, 25, 50, 75, 100]
                 });
+            });
+            document.getElementById('toggle-button').addEventListener('click', function() {
+                var div = document.getElementById('toggle-div');
+                if (div.style.display === 'none') {
+                    div.style.display = 'block'; // Affiche la div
+                } else {
+                    div.style.display = 'none'; // Cache la div
+                }
             });
         </script>
     </body>
