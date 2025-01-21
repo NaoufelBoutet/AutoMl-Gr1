@@ -46,5 +46,19 @@
                 </ul>
             {% endif %}
         </form>
+        <h2>
+            Voici les datasets du projets :
+        </h2>
+        <div >
+            {% if liste_dataset %}
+                <ul>
+                    {% for dataset in liste_dataset %}
+                        <a href="{% url 'read_csv'  project_name=project_name filename=dataset%}">{{ dataset }}</a>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p>Aucun dataset trouvé.</p>
+            {% endif %}
+        </div>
     </body>
 </html>
