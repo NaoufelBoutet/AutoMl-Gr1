@@ -48,12 +48,29 @@
             {% if liste_dataset %}
                 <ul>
                     {% for dataset in liste_dataset %}
-                        <a href="{% url 'read_csv'  project_name=project_name filename=dataset%}">{{ dataset }}</a>
+                        <a href="{% url 'project'  project_name=project_name filename=dataset%}">{{ dataset }}</a>
                     {% endfor %}
                 </ul>
             {% else %}
                 <p>Aucun dataset trouvé.</p>
             {% endif %}
         </div>
+        {% if df %}
+            <div>
+                <div>
+                    Le df contient {{dico_info.colonne}} colonne
+                </div>
+                <div>
+                    Le df contient {{dico_info.ligne}} ligne
+                </div>
+                <div>
+                    nombre de valeur nul par colonne :
+                    {{dico_info.nb_nul|safe}}
+                </div>
+                <div>
+                    Le df contient {{dico_info.nb_colonne_double}} ligne dupliqué
+                </div>
+            </div>
+        {%endif%}
     </body>
 </html>

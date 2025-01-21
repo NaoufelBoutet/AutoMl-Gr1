@@ -22,9 +22,8 @@ def liste_project(request):
     print(list_project)
     return render(request, 'liste_project.html',{'username' : username,'projects' : list_project})
 
-@login_required
-def read_csv(request, project_name, filename):
-    username=request.user.username
+
+def read_csv(username, project_name, filename):
     db, client = get_db_mongo('Auto_ML','localhost',27017)
     fs = gridfs.GridFS(db)
     grid_out = fs.find_one({"metadata.username": username, 'metadata.filename': filename,'metadata.project_name':project_name})
@@ -36,8 +35,8 @@ def read_csv(request, project_name, filename):
         colonne = df.shape[1]
         nb_nul = df.isnull().sum().to_frame().to_html()
         nb_colonne_double = df.duplicated().sum()
-        return render(request, 'stat_file.html', {'username':username,'file_choisi':filename,'project_name':project_name,'ligne':ligne,'colonne':colonne,
-                                                  'nb_nul':nb_nul,'nb_colonne_double':nb_colonne_double})
+        return {'username':username,'ligne':ligne,'colonne':colonne,
+                'nb_nul':nb_nul,'nb_colonne_double':nb_colonne_double}
 
 @login_required
 def df_to_html(request, filename,project_name):
@@ -52,16 +51,17 @@ def df_to_html(request, filename,project_name):
     return render(request, 'df_html.html', {'username':username,'table_html': table_html,'file_choisi':filename,'project_name':project_name})
 
 @login_required
-def project(request,project_name):
+def project(request,project_name,filename):
     username=request.user.username
     db, client = get_db_mongo('Auto_ML','localhost',27017)
     collection = db['Projet']
     projet=collection.find_one({'username':username,'nom_projet':project_name})
-    print(projet)
     liste_dataset=projet['data_set']
-    print(liste_dataset)
-    print('ouiii')
-    return render(request,'project.html',{'username':username,'project_name':project_name,'liste_dataset':liste_dataset})
+    if filename=='None':
+        filename=None
+    else:
+        dico_info=read_csv(username,project_name,filename)
+    return render(request,'project.html',{'username':username,'project_name':project_name,'liste_dataset':liste_dataset,'filename':filename,'dico_info':dico_info})
 
         
 def test_csv(username, filename,project_name):
