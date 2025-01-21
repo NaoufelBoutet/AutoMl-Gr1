@@ -22,33 +22,6 @@ def liste_project(request):
     print(list_project)
     return render(request, 'liste_project.html',{'username' : username,'projects' : list_project})
 
-
-def read_csv(username, project_name, filename):
-    db, client = get_db_mongo('Auto_ML','localhost',27017)
-    fs = gridfs.GridFS(db)
-    grid_out = fs.find_one({"metadata.username": username, 'metadata.filename': filename,'metadata.project_name':project_name})
-    print(username,filename,project_name)
-    if grid_out:
-        file_data = BytesIO(grid_out.read())
-        df = pd.read_csv(file_data,sep=',',on_bad_lines='warn')
-        ligne = df.shape[0]
-        colonne = df.shape[1]
-        nb_nul = df.isnull().sum().to_frame().to_html()
-        nb_colonne_double = df.duplicated().sum()
-        return {'username':username,'ligne':ligne,'colonne':colonne,
-                'nb_nul':nb_nul,'nb_colonne_double':nb_colonne_double}
-
-
-def df_to_html(username,filename,project_name):
-    db, client = get_db_mongo('Auto_ML','localhost',27017)
-    fs = gridfs.GridFS(db)
-    grid_out = fs.find_one({"metadata.username": username, 'metadata.filename': filename,'metadata.project_name':project_name})
-    if grid_out:
-        file_data = BytesIO(grid_out.read())
-        df = pd.read_csv(file_data,sep=',',on_bad_lines='warn')
-        table_html=df.to_html(classes='display',table_id="dataframe-table",index=False)
-    return table_html
-
 @login_required
 def project(request,project_name):
     username=request.user.username
@@ -70,38 +43,8 @@ def project(request,project_name):
         return render(request,'project.html',{'username':username,'project_name':project_name,'liste_dataset':liste_dataset,
                                             'filename':filename,'dico_info':dico_info,'table_html':table_html})
     else :
-        
-
-        
-def test_csv(username, filename,project_name):
-    db, client = get_db_mongo('Auto_ML','localhost',27017)
-    fs = gridfs.GridFS(db)
-    file = fs.find({"metadata.username": username,'metadata.filename':filename,'metadata.project_name':project_name})
-    if len(list(file))==0:
-        return None
-    else:
-        return 1
+        return redirect(process_dataset,project_name)
     
-def get_project_by_user(username,id):
-    db, client = get_db_mongo('Auto_ML','localhost',27017)
-    collection =db['Projet']
-    collection2= db['User']
-    user_project = collection2.find_one({'username':username})
-    liste=[]
-    if user_project:
-        for id in user_project['projet']:
-            projet=collection.find_one({'_id':id})
-            if projet:
-                liste.append(projet)
-    return liste
-
-    
-def get_file_csv_by_user(username):
-    db, client = get_db_mongo('Auto_ML','localhost',27017)
-    fs = gridfs.GridFS(db)
-    files = fs.find({"metadata.username": username})
-    return files
-
 @login_required
 def upload_csv(request,project_name):
     username=request.user.username
@@ -138,7 +81,8 @@ def upload_csv(request,project_name):
     else :
         client.close()
         form = UploadFileForm()
-
+        
+@login_required
 def creer_project(request):
     username=request.user.username
     db,client = get_db_mongo('Auto_ML','localhost',27017)
@@ -158,6 +102,62 @@ def creer_project(request):
                 print('doc enregistré')  
     return redirect('liste_project')
 
+@login_required
+def process_dataset(request,project_name):
+    username=request.user.username
+    return render(request, 'process_dataset.html', {'username':username})
+
+def read_csv(username, project_name, filename):
+    db, client = get_db_mongo('Auto_ML','localhost',27017)
+    fs = gridfs.GridFS(db)
+    grid_out = fs.find_one({"metadata.username": username, 'metadata.filename': filename,'metadata.project_name':project_name})
+    print(username,filename,project_name)
+    if grid_out:
+        file_data = BytesIO(grid_out.read())
+        df = pd.read_csv(file_data,sep=',',on_bad_lines='warn')
+        ligne = df.shape[0]
+        colonne = df.shape[1]
+        nb_nul = df.isnull().sum().to_frame().to_html()
+        nb_colonne_double = df.duplicated().sum()
+        return {'username':username,'ligne':ligne,'colonne':colonne,
+                'nb_nul':nb_nul,'nb_colonne_double':nb_colonne_double}
 
 
-# Create your views here.
+def df_to_html(username,filename,project_name):
+    db, client = get_db_mongo('Auto_ML','localhost',27017)
+    fs = gridfs.GridFS(db)
+    grid_out = fs.find_one({"metadata.username": username, 'metadata.filename': filename,'metadata.project_name':project_name})
+    if grid_out:
+        file_data = BytesIO(grid_out.read())
+        df = pd.read_csv(file_data,sep=',',on_bad_lines='warn')
+        table_html=df.to_html(classes='display',table_id="dataframe-table",index=False)
+    return table_html
+        
+def test_csv(username, filename,project_name):
+    db, client = get_db_mongo('Auto_ML','localhost',27017)
+    fs = gridfs.GridFS(db)
+    file = fs.find({"metadata.username": username,'metadata.filename':filename,'metadata.project_name':project_name})
+    if len(list(file))==0:
+        return None
+    else:
+        return 1
+    
+def get_project_by_user(username,id):
+    db, client = get_db_mongo('Auto_ML','localhost',27017)
+    collection =db['Projet']
+    collection2= db['User']
+    user_project = collection2.find_one({'username':username})
+    liste=[]
+    if user_project:
+        for id in user_project['projet']:
+            projet=collection.find_one({'_id':id})
+            if projet:
+                liste.append(projet)
+    return liste
+
+def get_file_csv_by_user(username):
+    db, client = get_db_mongo('Auto_ML','localhost',27017)
+    fs = gridfs.GridFS(db)
+    files = fs.find({"metadata.username": username})
+    return files
+
