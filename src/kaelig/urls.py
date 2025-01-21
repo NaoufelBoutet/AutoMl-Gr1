@@ -16,24 +16,51 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import include, path
-from autoML import views as autoML_views
-from auth_user import views as auth_user_views
 from import_donnee import views as import_donnee_views
+from auth_user import views as authviews
+
+
+
 
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', autoML_views.home, name='home'),
-    path('login/',auth_user_views.show_login, name='show_login'),
-    path('sign/', auth_user_views.show_sign, name='show_sign'),
-    path('users/', auth_user_views.sign_in, name='sign_in'),
-    path('connect/',auth_user_views.login, name='login'),
-    path('username/<str:username>/',autoML_views.espace_personel,name='perso'),
-    path('sucess/',auth_user_views.success, name='success'),    
-    path('username/<str:username>/import_data_home/', import_donnee_views.home_data, name='home_data'),
-    path('username/<str:username>/upload_csv/',import_donnee_views.upload_csv,name='upload_csv'),
-    path('username/<str:username>/result_csv/',import_donnee_views.result_csv,name='result_csv'),
-    path('username/<str:username>/browse_file/',import_donnee_views.browse_file, name='browse_file'),
-    path('username/<str:username>/filename/<str:filename>',import_donnee_views.read_csv,name='read_csv'),
-    path('username/<str:username>/filename/<str:filename>/html',import_donnee_views.df_to_html,name='df_to_html')
+    path('connexion/', authviews.connexion , name='connexion'),
+    path('inscription/', authviews.inscription , name='inscription'),
+    path('', authviews.connexion , name='connexion'),
+    path('accueil/', import_donnee_views.accueil , name='accueil'),
+    path('create_project', import_donnee_views.create_project , name='create_project'),
+    path('deconnexion/', authviews.deconnexion , name='deconnexion'),
+    path('vosprojets/', import_donnee_views.projects , name='projects'),
+    path('projet_data/', import_donnee_views.projet_data, name='projet_data'),
+    path('upload_fichier/', import_donnee_views.upload_fichier, name='upload_fichier'),
+    path('dataset_info/', import_donnee_views.dataset_info, name='dataset_info'),
+    
 ]
+# path('login/',auth_user_views.show_login, name='show_login'),
+#     path('sign/', auth_user_views.show_sign, name='show_sign'),
+#     path('users/', auth_user_views.sign_in, name='sign_in'),
+#     path('connect/',auth_user_views.login, name='login'),
+#     path('username/<str:username>/',autoML_views.espace_personel,name='perso'),
+#     path('sucess/',auth_user_views.success, name='success'),    
+#     path('username/<str:username>/import_data_home/', import_donnee_views.home_data, name='home_data'),
+#     path('username/<str:username>/upload_csv/',import_donnee_views.upload_csv,name='upload_csv'),
+#     path('username/<str:username>/result_csv/',import_donnee_views.result_csv,name='result_csv'),
+#     path('username/<str:username>/browse_file/',import_donnee_views.browse_file, name='browse_file'),
+#     path('username/<str:username>/filename/<str:filename>',import_donnee_views.read_csv,name='read_csv'),
+#     path('username/<str:username>/filename/<str:filename>/html',import_donnee_views.df_to_html,name='df_to_html')
+
+
+
+# urlpatterns = [
+#     path('admin/', admin.site.urls),
+#     path('connexion/', authviews.connexion , name='connexion'),
+#     path('inscription/', authviews.inscription , name='inscription'),
+#     path('', staticsviews.accueil , name='accueil'),
+#     path('accueil/', staticsviews.accueil , name='accueil'),
+#     path('deconnexion/', authviews.deconnexion , name='deconnexion'),
+#     path('afficher_dataset/', staticsviews.afficher_dataset, name='afficher_dataset'),
+#     path('supprimer_dataset/', staticsviews.supprimer_dataset, name='supprimer_dataset'),
+#     path('data_cleanning/', staticsviews.nettoyage_dataset, name='nettoyage_dataset')
+    
+# ]

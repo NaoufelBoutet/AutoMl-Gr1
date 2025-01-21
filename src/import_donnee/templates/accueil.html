@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <nav>
+        
+        {% if not user.is_authenticated %}
+        <a href="{% url 'inscription' %}">Inscription</a>
+        {% endif %}
+        {% if not user.is_authenticated %}
+        <a href="{% url 'connexion' %}">Connexion</a>
+        {% endif %}
+        {% if user.is_authenticated %}
+        <a href="{% url 'deconnexion' %}">Déconnexion</a>
+        {% endif %}
+        {% if user.is_authenticated %}
+        <a href="{% url 'projects' %}">projects</a>
+        {% endif %}
+    
+</nav>
+    <h1>accueil</h1>
+
+
+    <h1>Créer un nouveau projet</h1>
+    <form method="post" action="{% url 'create_project' %}">
+        {% csrf_token %}
+        <label for="project_name">Nom du projet :</label>
+        <input type="text" id="project_name" name="project_name" required>
+        <button type="submit">Créer</button>
+    </form>
+
+    {% if messages %}
+    {% for message in messages %}
+        <div>{{ message }}</div>
+    {% endfor %}
+    {% endif %} 
+</html>

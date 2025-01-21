@@ -3,91 +3,194 @@ import csv
 from utils import get_db_mongo
 import pymongo
 import gridfs
-from .forms import UploadFileForm
 from django.urls import reverse
 import pandas as pd
 from io import BytesIO
+from django.contrib.auth.decorators import login_required
+import datetime
+from django.contrib import messages
+from . import forms
 
-def home_data(request,username):
-    return render(request, 'home_data.html',{'username' : username})
 
-def result_csv(request,username):
-    message = request.GET.get('message', 'Aucun message fourni')
-    return render(request, 'result.html',{'message' : message,'username' : username})
 
-def browse_file(request,username):
-    files=list(get_file_csv_by_user(username))
-    for file in files:
-        print(file.metadata.get('filename'))
-    return render(request, 'browse_file.html',{'username' : username,'files' : files})
+@login_required
+def accueil(request):
+     return render(request, "accueil.html")
 
-def read_csv(request, username, filename):
-    db, client = get_db_mongo('Auto_ML','localhost',27017)
-    fs = gridfs.GridFS(db)
-    grid_out = fs.find_one({"metadata.username": username, 'metadata.filename': filename})
-    if grid_out:
-        file_data = BytesIO(grid_out.read())
-        df = pd.read_csv(file_data,sep=',',on_bad_lines='warn')
-        ligne = df.shape[0]
-        colonne = df.shape[1]
-        nb_nul = df.isnull().sum().to_frame().to_html()
-        nb_colonne_double = df.duplicated().sum()
-        return render(request, 'stat_file.html', {'username':username,'file_choisi':filename,'ligne':ligne,'colonne':colonne,
-                                                  'nb_nul':nb_nul,'nb_colonne_double':nb_colonne_double})
 
-def df_to_html(request,username, filename):
-    db, client = get_db_mongo('Auto_ML','localhost',27017)
-    fs = gridfs.GridFS(db)
-    grid_out = fs.find_one({"metadata.username": username, 'metadata.filename': filename})
-    if grid_out:
-        file_data = BytesIO(grid_out.read())
-        df = pd.read_csv(file_data,sep=',',on_bad_lines='warn')
-        table_html=df.to_html(classes='display',table_id="dataframe-table",index=False)
-    return render(request, 'df_html.html', {'username':username,'table_html': table_html,'file_choisi':filename})
-        
-def test_csv(username, filename):
-    db, client = get_db_mongo('Auto_ML','localhost',27017)
-    fs = gridfs.GridFS(db)
-    file = fs.find({"metadata.username": username,'metadata.filename':filename})
-    if len(list(file))==0:
-        return None
-    else:
-        return 1
-    
-def get_file_csv_by_user(username):
-    db, client = get_db_mongo('Auto_ML','localhost',27017)
-    fs = gridfs.GridFS(db)
-    files = fs.find({"metadata.username": username})
-    return files
 
-def upload_csv(request, username):
-    db,client = get_db_mongo('Auto_ML','localhost',27017)
-    fs = gridfs.GridFS(db)
-
+@login_required
+def create_project(request):
     if request.method == 'POST':
-        print(request.FILES['csv_file'].name)
-        form = UploadFileForm(request.POST, request.FILES)
-        if form.is_valid():
-            csv_file = request.FILES['csv_file']
-
-            if not test_csv(username,csv_file.name):
-                file_id = fs.put(
-                    csv_file, 
-                    filename={'csv_file_name':csv_file.name,'username':username}, 
-                    metadata={"username": username,'filename':csv_file.name},
-                    chunkSizeBytes=1048576
-                )
-                client.close()
-                return redirect(reverse('result_csv', kwargs={'username': username}) + f"?message=Le fichier est bien enregistré")
-            else:
-                client.close()
-                return redirect(reverse('result_csv', kwargs={'username': username}) + f"?message=Le fichier existe déjà")
-        else:
-            client.close()
-            return render(request, 'home_data.html', {'form': form, 'username': username})
-    else :
+        db, client = get_db_mongo('Auto_ML', 'localhost', 27017)
+        col = db["User"]
+        project_name = request.POST.get('project_name')
+        user_id = str(request.user.id)
+        user_name = request.user.username
+        user_doc = col.find_one({'_id': user_id})
+        if not user_doc:
+            print(f"Utilisateur {user_id} non trouvé, création d'un nouveau document")
+            new_user = {
+                '_id': user_id,
+                'username': user_name,
+                'projects': []
+            }
+            col.insert_one(new_user)
+            user_doc = new_user  
+        existing_project = next((project for project in user_doc['projects'] if project['name'] == project_name), None)
+        if existing_project:
+            messages.error(request, f"Le projet '{project_name}' existe déjà.")
+            return redirect('accueil')
+        new_project = {  
+            'name': project_name,
+            'data': []
+        }
+        col.update_one(
+            {'_id': user_id},
+            {'$push': {'projects': new_project}}
+        )
         client.close()
-        form = UploadFileForm()
+        messages.success(request, f"Le projet '{project_name}' a été créé avec succès.")
+        return render(request, 'accueil.html')
+
+    return render(request, 'accueil.html')
 
 
-# Create your views here.
+@login_required
+def projects(request):
+    db, client = get_db_mongo('Auto_ML', 'localhost', 27017)
+    col = db["User"]
+    user_id = str(request.user.id)
+    user_doc = col.find_one({'_id': user_id})
+    if user_doc:
+        projects = user_doc.get('projects', [])
+    else:
+        projects = []
+    client.close()
+    return render(request, 'projet.html', {'projects': projects})
+
+
+@login_required
+def projet_data(request):
+    if request.method == 'POST':  
+        db, client = get_db_mongo('Auto_ML', 'localhost', 27017)
+        col = db["User"]
+        user_id = str(request.user.id)
+        project_name = request.POST.get('projet_name')  
+        user_doc = col.find_one({'_id': user_id})
+        projects = user_doc.get('projects', [])
+        project = next((p for p in projects if p['name'] == project_name), None)
+        client.close()
+        return render(request, 'projet_dataset.html',{'project':project})
+    return redirect('upload_fichier')  
+
+
+
+
+@login_required
+def upload_fichier(request):
+    if request.method == 'POST':
+        project_name = request.POST.get('projet_name')
+        db, client = get_db_mongo('Auto_ML', 'localhost', 27017)
+        col = db["User"]
+        user_id = str(request.user.id)
+        user_doc = col.find_one({'_id': user_id})
+        projects = user_doc.get('projects', [])
+        project = next((p for p in projects if p['name'] == project_name), None)
+        separator = request.POST.get('separator', ',')  
+        uploaded_file = request.FILES.get('file')
+        if uploaded_file:
+            file_size = uploaded_file.size
+            if file_size > 15 * 1024 * 1024:  
+                messages.error(request, "La taille du fichier ne doit pas dépasser 5 Mo.")
+                return render(request,'projet_dataset.html',{"project":project})
+            try:
+                if uploaded_file.name.endswith('.csv'):
+                    df = pd.read_csv(uploaded_file, sep=separator)
+                elif uploaded_file.name.endswith('.xlsx'):
+                    df = pd.read_excel(uploaded_file, engine='openpyxl')
+                elif uploaded_file.name.endswith('.xls'):
+                    df = pd.read_excel(uploaded_file, engine='xlrd')
+                else:
+                    messages.error(request, "Format de fichier non supporté.")
+                    return render(request,'projet_dataset.html',{"project":project})
+                data_dict = df.to_dict("records")
+                if not data_dict:
+                    messages.error(request, "Aucune donnée n'a été lue à partir du fichier.")
+                    return render(request,'projet_dataset.html',{"project":project})
+                dataset_name = uploaded_file.name  
+                existing_dataset = next((dataset for dataset in project.get('data', []) if dataset['dataset_name'] == dataset_name), None)
+                if existing_dataset:
+                    messages.error(request, "Un dataset avec ce nom existe déjà dans ce projet.")
+                    return render(request,'projet_dataset.html',{"project":project})
+                organized_data = {
+                    'dataset_name': dataset_name,
+                    'data': data_dict
+                }
+                col.update_one(
+                    {'_id': user_id, 'projects.name': project_name},
+                    {'$push': {'projects.$.data': organized_data}}
+                )
+                user_doc = col.find_one({'_id': user_id})
+                projects = user_doc.get('projects', [])
+                project = next((p for p in projects if p['name'] == project_name), None)
+                client.close()
+                messages.success(request, f"Le fichier a été téléchargé avec succès dans le projet {project_name}.")
+                return render(request,'projet_dataset.html',{"project":project})
+            except Exception as e:
+                messages.error(request, f"Erreur lors du traitement du fichier : {str(e)}")
+                return render(request,'projet_dataset.html',{"project":project})
+        else:
+            messages.error(request, "Aucun fichier n'a été téléchargé.")
+            return render(request,'projet_dataset.html',{"project":project})
+
+    return render(request,'projet_dataset.html',{"project":project})
+
+
+
+
+@login_required
+def dataset_info(request):
+    if request.method == "POST":
+        project_name = request.POST.get('projet_name')
+        dataset_name = request.POST.get('selected_dataset')
+        
+        # Connexion à MongoDB
+        db, client = get_db_mongo('Auto_ML', 'localhost', 27017)
+        col = db["User"]
+        user_id = str(request.user.id)
+        user_doc = col.find_one({'_id': user_id})
+        projects = user_doc.get('projects', [])
+        project = next((p for p in projects if p['name'] == project_name), None)
+        dataset = next((d for d in project.get('data', []) if d['dataset_name'] == dataset_name), None)
+        try:
+            df = pd.DataFrame(dataset['data'])
+            ligne = df.shape[0]  
+            colonne = df.shape[1]  
+            nb_nul = df.isnull().sum().to_frame(name="Nombre de valeurs nulles").to_html(classes="table table-bordered") 
+            nb_colonne_double = df.duplicated().sum()  
+            table_html=df.to_html(classes='display',table_id="dataframe-table",index=False)
+            client.close()
+            return render(request, 'projet_dataset.html', {'table_html':table_html,
+                'dataset_name': dataset_name,
+                'ligne': ligne,
+                'colonne': colonne,
+                'nb_nul': nb_nul,
+                'nb_colonne_double': nb_colonne_double,
+                "project":project
+            })
+        except Exception as e:
+            messages.error(request, f"Erreur lors de l'analyse du dataset : {str(e)}")
+            client.close()
+            return render(request,'projet_dataset.html',{"project":project})
+    else:
+        return render(request,'projet_dataset.html',{"project":project})
+
+
+
+
+  
+
+
+
+
