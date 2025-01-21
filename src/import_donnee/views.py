@@ -14,16 +14,6 @@ def home_data(request):
     username=request.user.username
     return render(request, 'home_data.html',{'username' : username})
 
-
-@login_required
-def browse_file(request):
-    username=request.user.username
-    
-    files=list(get_file_csv_by_user(username))
-    for file in files:
-        print(file.metadata.get('filename'))
-    return render(request, 'browse_file.html',{'username' : username,'files' : files})
-
 @login_required
 def liste_project(request):
     username=request.user.username
@@ -67,6 +57,7 @@ def project(request,project_name):
     db, client = get_db_mongo('Auto_ML','localhost',27017)
     collection = db['Projet']
     projet=collection.find_one({'username':username,'nom_projet':project_name})
+    print(projet)
     liste_dataset=projet['data_set']
     print(liste_dataset)
     print('ouiii')
@@ -76,7 +67,7 @@ def project(request,project_name):
 def test_csv(username, filename,project_name):
     db, client = get_db_mongo('Auto_ML','localhost',27017)
     fs = gridfs.GridFS(db)
-    file = fs.find({"metadata.username": username,'metadata.filename':filename,'project_name':project_name})
+    file = fs.find({"metadata.username": username,'metadata.filename':filename,'metadata.project_name':project_name})
     if len(list(file))==0:
         return None
     else:
@@ -126,15 +117,15 @@ def upload_csv(request,project_name):
                     collection.update_one({'username':username,'nom_projet':project_name},{"$push": {"data_set": csv_file.name}})
 
                     client.close()
-                    return render(request,'result.html',{'username': username,'message':"c'est good !"})
+                    return redirect('project',project_name)
                 else:
-                    return render(request,'result.html',{'username': username,'message':"projet non trouvé"})
+                    return redirect('project',project_name)
             else:
                 client.close()
-                return render(request,'result.html',{'username': username,'message':"ce n'est pas un bon format"})
+                return redirect('project',project_name)
         else:
             client.close()
-            return render(request, 'home_data.html', {'form': form, 'username': username})
+            return redirect('project',project_name)
     else :
         client.close()
         form = UploadFileForm()

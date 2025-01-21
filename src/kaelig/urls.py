@@ -32,7 +32,6 @@ urlpatterns = [
     path('sucess/',auth_user_views.success, name='success'),    
     path('home/import_data_home/', import_donnee_views.home_data, name='home_data'),
     path('home/<str:project_name>/upload_csv/',import_donnee_views.upload_csv,name='upload_csv'),
-    path('home/browse_file/',import_donnee_views.browse_file, name='browse_file'),
     path('home/project/',import_donnee_views.liste_project, name='liste_project'),
     path('home/creer_project/',import_donnee_views.creer_project, name='creer_project'),
     path('home/project/<str:project_name>/',import_donnee_views.project, name='project'),
