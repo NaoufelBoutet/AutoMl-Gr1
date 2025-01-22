@@ -32,7 +32,7 @@ def project(request,project_name):
     liste_dataset=projet['data_set']
     if action=="action" or action==None:
         if not filename:
-            filename,columns,dico_info,table_html,df,dico_type,rows,columns=None,None,None,None,None,None,None
+            filename,columns,dico_info,table_html,df,dico_type,rows,columns=None,None,None,None,None,None,None,None
         else:
             dico_info=read_csv(username,project_name,filename)
             table_html,df=df_to_html(username,filename,project_name)      
@@ -62,11 +62,23 @@ def project(request,project_name):
             df = pd.read_csv(file_data,sep=',',on_bad_lines='warn')
             df = magic_clean(df)
             save_dataset(filename,project_name,username,df)
-            print(df.info())
-            return render(request,'project.html',{'project_name':project_name,'filename':filename,'username':username,'liste_dataset':liste_dataset})
+            dico_info=read_csv(username,project_name,filename)
+            table_html,df=df_to_html(username,filename,project_name)      
+            dico_type=colonne_type(df)
+            rows = df.to_dict(orient='records')
+            columns=df.columns
+            return render(request,'project.html',{'username':username,'project_name':project_name,'liste_dataset':liste_dataset,
+                                            'filename':filename,'dico_info':dico_info,'table_html':table_html,'dico_type':dico_type,
+                                            'df':df,'rows':rows,'columns':columns})
         else:
             return render(request,'project.html',{'username':username,'project_name':project_name,'liste_dataset':liste_dataset,
                                                     'filename':filename,})
+    elif action=="action3":
+        print(filename)
+        msg=delete_dataset(filename,username,project_name)
+        projet=collection.find_one({'username':username,'nom_projet':project_name})
+        liste_dataset=projet['data_set']
+        return render(request,'project.html',{'username':username,'project_name':project_name,'liste_dataset':liste_dataset})
 
 @login_required
 def upload_csv(request,project_name):
@@ -111,9 +123,8 @@ def creer_project(request):
             else :
                 ajout=collection.insert_one({"nom_projet": nom_projet, "username": request.user.username, 'id_user':request.user.id,'data_set':[]})
                 project_id = ajout.inserted_id
-                collection2.update_one({"username": request.user.username},{"$push": {"projet": project_id}})
-                print('doc enregistré')  
-    return redirect('liste_project')
+                collection2.update_one({"username": request.user.username},{"$push": {"projet": project_id}})  
+    return render(request,'liste_project.html')
 
 @login_required
 def process_dataset(request,project_name):
@@ -185,7 +196,6 @@ def get_file_csv_by_user(username):
 def magic_clean(df):
     for col in df.select_dtypes(include=['object']).columns:
         df[col] = df[col].str.replace(r'[\s\x00-\x1F\x7F-\x9F]+', '', regex=True)
-        df[col] = df[col].str.strip()
         df[col] = df[col].str.replace(',', '.', regex=False)
         try :
             converted = pd.to_numeric(df[col], errors='raise')
@@ -231,3 +241,19 @@ def colonne_type(df):
         col: type(df[col].iloc[0]).__name__ if len(df[col]) > 0 else 'NoneType'
         for col in df.columns
     }
+
+def delete_dataset(filename,username,project_name):
+    db, client = get_db_mongo('Auto_ML','localhost',27017)
+    collection = db['Projet']
+    fs = gridfs.GridFS(db)
+    file = fs.find_one({"metadata.username": username,"metadata.project_name":project_name,"metadata.filename":filename})
+    if not file:
+        return None
+    else :
+        file_id=file._id
+        fs.delete(file_id)
+        user_project=collection.find_one({"username":username,"nom_projet":project_name})
+        dataset = user_project.get('data_set', {})
+        dataset=dataset.pop(filename)
+        collection.update_one({"username": username, "nom_projet": project_name},{"$set": {"data_set": dataset}})
+    return {"success": True, "message": "Dataset supprimé avec succès."}
