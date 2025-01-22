@@ -3,6 +3,7 @@
         <title>Espace import data</title>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
+        {% load filters %}
         {% load static %}
         <script src="{% static 'scripts.js' %}"></script>
         <link rel="stylesheet" href="{% static 'style.css' %}">
@@ -59,6 +60,7 @@
                 </select>
                 <button type="submit" name="action" value="action">Observer le dataset</button>
                 <button type="submit" name="action" value="action1">Modifier le dataset</button>
+                <button type="submit" name="action" value="action2">Magic clean</button>
             </form>            
             {% else %}
                 <p>Aucun dataset trouvé.</p>
@@ -83,11 +85,30 @@
             </div>
         {%endif%}
         <br><br>
-        <div>
-            {%if table_html%}
-                {{ table_html|safe }}
-            {%endif%}
-        </div>
+        {% if dico_type and rows %}
+            <div>
+                <table id="dataframe-table" class="display">
+                    <thead>
+                        <tr>
+                            {% for col in columns %}
+                                <th>{{ col }} ({{ dico_type|dict_get:col }})</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in rows %}
+                            <tr>
+                                {% for col in columns %}
+                                    <td>{{ row|dict_get:col }}</td>
+                                {% endfor %}
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p>Le DataFrame est vide ou non défini.</p>
+            {% endif %}
 
         <!-- Initialisation de DataTables -->
         <script>

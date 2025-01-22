@@ -19,7 +19,6 @@ def liste_project(request):
     username=request.user.username
     id=request.user.id
     list_project=get_project_by_user(username,id)
-    print(list_project)
     return render(request, 'liste_project.html',{'username' : username,'projects' : list_project})
 
 @login_required
@@ -31,18 +30,19 @@ def project(request,project_name):
     collection = db['Projet']
     projet=collection.find_one({'username':username,'nom_projet':project_name})
     liste_dataset=projet['data_set']
-    print(action)
     if action=="action" or action==None:
         if not filename:
-            filename=None
-            dico_info=None
-            table_html=None
+            filename,columns,dico_info,table_html,df,dico_type,rows,columns=None,None,None,None,None,None,None
         else:
             dico_info=read_csv(username,project_name,filename)
-            table_html,df=df_to_html(username,filename,project_name)        
+            table_html,df=df_to_html(username,filename,project_name)      
+            dico_type=colonne_type(df)
+            rows = df.to_dict(orient='records')
+            columns=df.columns
         return render(request,'project.html',{'username':username,'project_name':project_name,'liste_dataset':liste_dataset,
-                                            'filename':filename,'dico_info':dico_info,'table_html':table_html})
-    else :
+                                            'filename':filename,'dico_info':dico_info,'table_html':table_html,'dico_type':dico_type,
+                                            'df':df,'rows':rows,'columns':columns})
+    elif action=="action1" :
         fs = gridfs.GridFS(db)
         grid_out = fs.find_one({"metadata.username": username, 'metadata.filename': filename,'metadata.project_name':project_name})
         if grid_out:
@@ -54,7 +54,20 @@ def project(request,project_name):
         else:
             return render(request,'project.html',{'username':username,'project_name':project_name,'liste_dataset':liste_dataset,
                                                     'filename':filename,})
-    
+    elif action=="action2":
+        fs = gridfs.GridFS(db)
+        grid_out = fs.find_one({"metadata.username": username, 'metadata.filename': filename,'metadata.project_name':project_name})
+        if grid_out:
+            file_data = BytesIO(grid_out.read())
+            df = pd.read_csv(file_data,sep=',',on_bad_lines='warn')
+            df = magic_clean(df)
+            save_dataset(filename,project_name,username,df)
+            print(df.info())
+            return render(request,'project.html',{'project_name':project_name,'filename':filename,'username':username,'liste_dataset':liste_dataset})
+        else:
+            return render(request,'project.html',{'username':username,'project_name':project_name,'liste_dataset':liste_dataset,
+                                                    'filename':filename,})
+
 @login_required
 def upload_csv(request,project_name):
     username=request.user.username
@@ -77,17 +90,8 @@ def upload_csv(request,project_name):
                         chunkSizeBytes=1048576
                     )
                     collection.update_one({'username':username,'nom_projet':project_name},{"$push": {"data_set": csv_file.name}})
-
-                    client.close()
-                    return redirect('project',project_name,None)
-                else:
-                    return redirect('project',project_name,None)
-            else:
-                client.close()
-                return redirect('project',project_name,None)
-        else:
-            client.close()
-            return redirect('project',project_name,None)
+        client.close()
+        return redirect('project',project_name)
     else :
         client.close()
         form = UploadFileForm()
@@ -101,7 +105,6 @@ def creer_project(request):
     if request.method == 'POST':
         nom_projet = request.POST.get("nom_projet")
         if nom_projet: 
-            print(nom_projet)
             test_nom = collection.find_one({"nom_projet": nom_projet,"username":username})
             if test_nom:
                 print('erreur_nom')
@@ -120,7 +123,6 @@ def process_dataset(request,project_name):
     fs = gridfs.GridFS(db)
     grid_out = fs.find_one({"metadata.username": username, 'metadata.filename': filename,'metadata.project_name':project_name})
     if grid_out:
-        print('okkkk')
         file_data = BytesIO(grid_out.read())
         df = pd.read_csv(file_data,sep=',',on_bad_lines='warn')
         categorical_columns, numerical_columns = type_column(df)
@@ -131,7 +133,6 @@ def read_csv(username, project_name, filename):
     db, client = get_db_mongo('Auto_ML','localhost',27017)
     fs = gridfs.GridFS(db)
     grid_out = fs.find_one({"metadata.username": username, 'metadata.filename': filename,'metadata.project_name':project_name})
-    print(username,filename,project_name)
     if grid_out:
         file_data = BytesIO(grid_out.read())
         df = pd.read_csv(file_data,sep=',',on_bad_lines='warn')
@@ -181,35 +182,31 @@ def get_file_csv_by_user(username):
     files = fs.find({"metadata.username": username})
     return files
 
-def remove_invisible_chars(df):
+def magic_clean(df):
     for col in df.select_dtypes(include=['object']).columns:
         df[col] = df[col].str.replace(r'[\s\x00-\x1F\x7F-\x9F]+', '', regex=True)
+        df[col] = df[col].str.strip()
+        df[col] = df[col].str.replace(',', '.', regex=False)
+        try :
+            converted = pd.to_numeric(df[col], errors='raise')
+            if converted.notna().all():
+                try:
+                    df[col]=df[col].astype(int)
+                except:
+                    df[col]=df[col].astype(float)
+        except :
+            test1=df[col].apply(lambda x: isinstance(x, dict)).all()
+            test2=df[col].apply(lambda x: isinstance(x, list)).all()
+            if test1==True or test2==True:
+                pass
+            else:
+                df[col]=df[col].astype(str)
     return df
 
-def identify_column_type(df):
-    numeric_like = []
-    categorical_like = []
-    df=remove_invisible_chars(df)
-    for col in df.select_dtypes(include=['object']).columns:
-        df[col] = df[col].str.strip()
-        try:
-            df[col] = df[col].str.replace(',', '.', regex=False)
-            converted = pd.to_numeric(df[col], errors='coerce')
-            if converted.notna().all():
-                numeric_like.append(col)
-            else:
-                categorical_like.append(col)
-        except Exception:
-            categorical_like.append(col)
-    return numeric_like, categorical_like
-
 def type_column(df):
-    categorical_column=df.select_dtypes(include=["category"]).columns.tolist()
+    df = magic_clean(df)
+    categorical_column=df.select_dtypes(include=["category",'object']).columns.tolist()
     numerical_column=df.select_dtypes(include=['number']).columns.tolist()
-    num, cat = identify_column_type(df)
-    categorical_column+=cat
-    numerical_column+=num
-    print(f"num:{numerical_column},cat:{categorical_column}")
     return categorical_column, numerical_column
 
 def save_dataset(filename,project_name,username,df):
@@ -222,11 +219,15 @@ def save_dataset(filename,project_name,username,df):
         metadata=file.metadata
         filename2=file.filename
         file_id=file._id
-        print(file_id)
         fs.delete(file_id)
         csv_buffer = BytesIO()
         df.to_csv(csv_buffer, index=False)
         csv_buffer.seek(0)
         new_file_id = fs.put(csv_buffer.getvalue(), filename=filename2, metadata=metadata)
-        print(new_file_id)
         return new_file_id
+
+def colonne_type(df):
+    return {
+        col: type(df[col].iloc[0]).__name__ if len(df[col]) > 0 else 'NoneType'
+        for col in df.columns
+    }
