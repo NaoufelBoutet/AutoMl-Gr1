@@ -39,7 +39,7 @@ def project(request,project_name):
             table_html=None
         else:
             dico_info=read_csv(username,project_name,filename)
-            table_html=df_to_html(username,filename,project_name)
+            table_html,df=df_to_html(username,filename,project_name)        
         return render(request,'project.html',{'username':username,'project_name':project_name,'liste_dataset':liste_dataset,
                                             'filename':filename,'dico_info':dico_info,'table_html':table_html})
     else :
@@ -151,7 +151,7 @@ def df_to_html(username,filename,project_name):
         file_data = BytesIO(grid_out.read())
         df = pd.read_csv(file_data,sep=',',on_bad_lines='warn')
         table_html=df.to_html(classes='display',table_id="dataframe-table",index=False)
-    return table_html
+    return table_html,df
         
 def test_csv(username, filename,project_name):
     db, client = get_db_mongo('Auto_ML','localhost',27017)
@@ -181,14 +181,25 @@ def get_file_csv_by_user(username):
     files = fs.find({"metadata.username": username})
     return files
 
+def remove_invisible_chars(df):
+    for col in df.select_dtypes(include=['object']).columns:
+        df[col] = df[col].str.replace(r'[\s\x00-\x1F\x7F-\x9F]+', '', regex=True)
+    return df
+
 def identify_column_type(df):
     numeric_like = []
     categorical_like = []
+    df=remove_invisible_chars(df)
     for col in df.select_dtypes(include=['object']).columns:
+        df[col] = df[col].str.strip()
         try:
-            pd.to_numeric(df[col], errors='raise')
-            numeric_like.append(col)
-        except ValueError:
+            df[col] = df[col].str.replace(',', '.', regex=False)
+            converted = pd.to_numeric(df[col], errors='coerce')
+            if converted.notna().all():
+                numeric_like.append(col)
+            else:
+                categorical_like.append(col)
+        except Exception:
             categorical_like.append(col)
     return numeric_like, categorical_like
 
@@ -200,3 +211,22 @@ def type_column(df):
     numerical_column+=num
     print(f"num:{numerical_column},cat:{categorical_column}")
     return categorical_column, numerical_column
+
+def save_dataset(filename,project_name,username,df):
+    db, client = get_db_mongo('Auto_ML','localhost',27017)
+    fs = gridfs.GridFS(db)
+    file = fs.find_one({"metadata.username": username,"metadata.project_name":project_name,"metadata.filename":filename})
+    if not file:
+        return None
+    else:
+        metadata=file.metadata
+        filename2=file.filename
+        file_id=file._id
+        print(file_id)
+        fs.delete(file_id)
+        csv_buffer = BytesIO()
+        df.to_csv(csv_buffer, index=False)
+        csv_buffer.seek(0)
+        new_file_id = fs.put(csv_buffer.getvalue(), filename=filename2, metadata=metadata)
+        print(new_file_id)
+        return new_file_id
