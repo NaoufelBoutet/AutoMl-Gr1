@@ -35,6 +35,7 @@ urlpatterns = [
     path('projet_data/', import_donnee_views.projet_data, name='projet_data'),
     path('upload_fichier/', import_donnee_views.upload_fichier, name='upload_fichier'),
     path('dataset_info/', import_donnee_views.dataset_info, name='dataset_info'),
+    path('dataset_cleanning/', import_donnee_views.cleanning, name='cleanning'),
     
 ]
 # path('login/',auth_user_views.show_login, name='show_login'),

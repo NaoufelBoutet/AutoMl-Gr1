@@ -28,6 +28,28 @@
             margin: 0 auto; 
             padding: 20px; 
         }
+        .button-group {
+            display: flex;
+            justify-content: center; /* Centrer les boutons horizontalement */
+            gap: 10px; /* Espacement entre les boutons */
+            margin-top: 15px; /* Ajout d'un espacement avec la barre de sélection */
+        }
+
+        .button-group .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            color: white;
+        }
+
+        .button-group .btn.btn-primary {
+            background-color: #007BFF;
+        }
+
+        .button-group .btn.btn-success {
+            background-color: #28A745;
+        }
     </style>
     <link rel="stylesheet" href="https://cdn.datatables.net/1.10.21/css/jquery.dataTables.min.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -51,11 +73,11 @@
 <a href="{% url 'projects' %}">Retourner à mes projets</a>
 
 <div class="project-details">
-    <h1 class="project-title">Projet : {{ project.name|slice:":30" }}{% if project.name|length > 30 %}...{% endif %}</h1>
+    <h1 class="project-title">Projet : {{ project_name|slice:":30" }}{% if project_name|length > 30 %}...{% endif %}</h1>
     <div class="project-content">
         <form method="post" enctype="multipart/form-data" action="{% url 'upload_fichier' %}">
             {% csrf_token %}
-            <input type="hidden" name="projet_name" value="{{ project.name }}">
+            <input type="hidden" name="projet_name" value="{{ project_name }}">
             <!-- Champ de téléchargement de fichier -->
             <label for="file">Choisir un fichier :</label>
             <input type="file" name="file" id="file" required>
@@ -86,23 +108,25 @@
         {% csrf_token %}
         <fieldset style="border: 1px solid #ccc; padding: 10px; border-radius: 5px;">
             <legend style="font-weight: bold;">Choisir un Dataset</legend>
-            <input type="hidden" name="projet_name" value="{{ project.name }}">
-            
             <label for="selected_dataset" style="display: block; margin-bottom: 8px;">
                 <strong>Liste des datasets :</strong>
             </label>
             <select name="selected_dataset" id="selected_dataset" required style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ccc;">
-                <option value="" disabled selected>Sélectionner un dataset à afficher</option>
-                {% for dataset in project.data %}
-                    <option value="{{ dataset.dataset_name }}">{{ dataset.dataset_name }}</option>
-                {% empty %}
-                    <option value="" disabled>Aucun dataset trouvé.</option>
+                <option value="" disabled {% if not dataset_name %}selected{% endif %}>Sélectionner un dataset à afficher</option>
+                {% for dataset in dataset_names %}
+                    <option value="{{ dataset }}" {% if dataset == dataset_name %}selected{% endif %}>{{ dataset }}</option>
                 {% endfor %}
             </select>
-            
-            <button type="submit" style="margin-top: 10px; padding: 10px 20px; background-color: #007BFF; color: white; border: none; border-radius: 4px; cursor: pointer;">
-                Valider le dataset
-            </button>
+            <input type="hidden" name="dataset_name" value="{{ dataset }}">
+            <input type="hidden" name="project_name" value="{{ project_name }}">
+            <div class="button-group" style="margin-top: 15px;">
+                <button type="submit" name="action" value="action1" class="btn btn-primary">
+                    Afficher les données
+                </button>
+                <button type="submit" name="action" value="action2" class="btn btn-success">
+                    Nettoyer les données
+                </button>
+            </div>
         </fieldset>
     </form>
 </div>
