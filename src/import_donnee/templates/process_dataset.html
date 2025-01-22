@@ -24,4 +24,73 @@
                 </div>
             </a>
         </nav>
-        <h1>YOOOOOOOOOOOOOOOOOOOOOOOOOOOO</h1>
+        <main>
+            <section>
+                <h2>Gestion des valeurs manquantes</h2>
+                <form method="post" action="{% url 'project' project_name=project_name %}">
+                    {% csrf_token %}
+                    <p>Choisissez une méthode pour gérer les valeurs manquantes :</p>
+                    <label><input type="radio" name="missing_method" value="drop_rows"> Supprimer les lignes avec des valeurs manquantes</label><br>
+                    <label><input type="radio" name="missing_method" value="drop_columns"> Supprimer les colonnes avec des valeurs manquantes</label><br>
+                    <label><input type="radio" name="missing_method" value="fill_mean"> Remplir par la moyenne</label><br>
+                    <label><input type="radio" name="missing_method" value="fill_median"> Remplir par la médiane</label><br>
+                    <button type="submit">Appliquer</button>
+                </form>
+            </section>
+    
+            <section>
+                <h2>Encodage des variables catégoriques</h2>
+                <form method="post" action="{% url 'project' project_name=project_name %}">
+                    {% csrf_token %}
+                    <p>Sélectionnez les colonnes catégoriques à encoder :</p>
+                    <select name="categorical_columns" multiple>
+                        {% for column in categorical_columns %}
+                            <option value="{{ column }}">{{ column }}</option>
+                        {% endfor %}
+                    </select>
+                    <label><input type="radio" name="encoding_method" value="one_hot"> One-hot encoding</label><br>
+                    <label><input type="radio" name="encoding_method" value="label_encoding"> Label encoding</label><br>
+                    <button type="submit">Appliquer</button>
+                </form>
+            </section>
+    
+            <section>
+                <h2>Normalisation et standardisation</h2>
+                <form method="post" action="{% url 'project' project_name=project_name %}">
+                    {% csrf_token %}
+                    <p>Choisissez les colonnes à normaliser ou standardiser :</p>
+                    <select name="scaling_columns" multiple>
+                        {% for column in numerical_columns %}
+                            <option value="{{ column }}">{{ column }}</option>
+                        {% endfor %}
+                    </select>
+                    <label><input type="radio" name="scaling_method" value="normalization"> Normalisation</label><br>
+                    <label><input type="radio" name="scaling_method" value="standardization"> Standardisation</label><br>
+                    <button type="submit">Appliquer</button>
+                </form>
+            </section>
+    
+            <section>
+                <h2>Aperçu du dataset</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            {% for column in preview.columns %}
+                                <th>{{ column }}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in preview.rows %}
+                            <tr>
+                                {% for cell in row %}
+                                    <td>{{ cell }}</td>
+                                {% endfor %}
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </section>
+        </main>
+    </body>
+</html>

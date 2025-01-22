@@ -43,7 +43,17 @@ def project(request,project_name):
         return render(request,'project.html',{'username':username,'project_name':project_name,'liste_dataset':liste_dataset,
                                             'filename':filename,'dico_info':dico_info,'table_html':table_html})
     else :
-        return redirect(process_dataset,project_name)
+        fs = gridfs.GridFS(db)
+        grid_out = fs.find_one({"metadata.username": username, 'metadata.filename': filename,'metadata.project_name':project_name})
+        if grid_out:
+            file_data = BytesIO(grid_out.read())
+            df = pd.read_csv(file_data,sep=',',on_bad_lines='warn')
+            categorical_columns, numerical_columns = type_column(df)
+            return render(request,'process_dataset.html',{'project_name':project_name,'filename':filename,'username':username,
+                                                      'categorical_columns':categorical_columns,'numerical_columns':numerical_columns})
+        else:
+            return render(request,'project.html',{'username':username,'project_name':project_name,'liste_dataset':liste_dataset,
+                                                    'filename':filename,})
     
 @login_required
 def upload_csv(request,project_name):
@@ -105,7 +115,17 @@ def creer_project(request):
 @login_required
 def process_dataset(request,project_name):
     username=request.user.username
-    return render(request, 'process_dataset.html', {'username':username})
+    filename = request.GET.get('filename', None)
+    db, client = get_db_mongo('Auto_ML','localhost',27017)
+    fs = gridfs.GridFS(db)
+    grid_out = fs.find_one({"metadata.username": username, 'metadata.filename': filename,'metadata.project_name':project_name})
+    if grid_out:
+        print('okkkk')
+        file_data = BytesIO(grid_out.read())
+        df = pd.read_csv(file_data,sep=',',on_bad_lines='warn')
+        categorical_columns, numerical_columns = type_column(df)
+    return render(request, 'process_dataset.html', {'username':username,'project_name':project_name,
+                                                    'categorical_columns':categorical_columns,'numerical_columns':numerical_columns})
 
 def read_csv(username, project_name, filename):
     db, client = get_db_mongo('Auto_ML','localhost',27017)
@@ -161,3 +181,22 @@ def get_file_csv_by_user(username):
     files = fs.find({"metadata.username": username})
     return files
 
+def identify_column_type(df):
+    numeric_like = []
+    categorical_like = []
+    for col in df.select_dtypes(include=['object']).columns:
+        try:
+            pd.to_numeric(df[col], errors='raise')
+            numeric_like.append(col)
+        except ValueError:
+            categorical_like.append(col)
+    return numeric_like, categorical_like
+
+def type_column(df):
+    categorical_column=df.select_dtypes(include=["category"]).columns.tolist()
+    numerical_column=df.select_dtypes(include=['number']).columns.tolist()
+    num, cat = identify_column_type(df)
+    categorical_column+=cat
+    numerical_column+=num
+    print(f"num:{numerical_column},cat:{categorical_column}")
+    return categorical_column, numerical_column
