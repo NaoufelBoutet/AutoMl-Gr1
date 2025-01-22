@@ -124,7 +124,7 @@ def creer_project(request):
                 ajout=collection.insert_one({"nom_projet": nom_projet, "username": request.user.username, 'id_user':request.user.id,'data_set':[]})
                 project_id = ajout.inserted_id
                 collection2.update_one({"username": request.user.username},{"$push": {"projet": project_id}})  
-    return render(request,'liste_project.html')
+    return redirect('liste_project')
 
 @login_required
 def process_dataset(request,project_name):
@@ -254,6 +254,8 @@ def delete_dataset(filename,username,project_name):
         fs.delete(file_id)
         user_project=collection.find_one({"username":username,"nom_projet":project_name})
         dataset = user_project.get('data_set', {})
-        dataset=dataset.pop(filename)
+        print(dataset)
+        print(filename)
+        dataset.remove(filename)
         collection.update_one({"username": username, "nom_projet": project_name},{"$set": {"data_set": dataset}})
     return {"success": True, "message": "Dataset supprimé avec succès."}
