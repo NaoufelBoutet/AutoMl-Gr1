@@ -24,60 +24,63 @@ def liste_project(request):
 @login_required
 def project(request,project_name):
     username=request.user.username
-    filename = request.GET.get('filename', None)
-    action = request.GET.get('action', None)
     db, client = get_db_mongo('Auto_ML','localhost',27017)
     collection = db['Projet']
     projet=collection.find_one({'username':username,'nom_projet':project_name})
     liste_dataset=projet['data_set']
-    if action=="action" or action==None:
-        if not filename:
-            filename,columns,dico_info,table_html,df,dico_type,rows,columns=None,None,None,None,None,None,None,None
-        else:
-            dico_info=read_csv(username,project_name,filename)
-            table_html,df=df_to_html(username,filename,project_name)      
-            dico_type=colonne_type(df)
-            rows = df.to_dict(orient='records')
-            columns=df.columns
-        return render(request,'project.html',{'username':username,'project_name':project_name,'liste_dataset':liste_dataset,
-                                            'filename':filename,'dico_info':dico_info,'table_html':table_html,'dico_type':dico_type,
-                                            'df':df,'rows':rows,'columns':columns})
-    elif action=="action1" :
-        fs = gridfs.GridFS(db)
-        grid_out = fs.find_one({"metadata.username": username, 'metadata.filename': filename,'metadata.project_name':project_name})
-        if grid_out:
-            file_data = BytesIO(grid_out.read())
-            df = pd.read_csv(file_data,sep=',',on_bad_lines='warn')
-            categorical_columns, numerical_columns = type_column(df)
-            return render(request,'process_dataset.html',{'project_name':project_name,'filename':filename,'username':username,
-                                                      'categorical_columns':categorical_columns,'numerical_columns':numerical_columns})
-        else:
+    if request.method == 'POST':
+        filename = request.POST.get('filename', None)
+        action = request.POST.get('action', None)
+        if action=="action" or action==None:
+            if not filename:
+                filename,columns,dico_info,table_html,df,dico_type,rows,columns=None,None,None,None,None,None,None,None
+            else:
+                dico_info=read_csv(username,project_name,filename)
+                table_html,df=df_to_html(username,filename,project_name)      
+                dico_type=colonne_type(df)
+                rows = df.to_dict(orient='records')
+                columns=df.columns
             return render(request,'project.html',{'username':username,'project_name':project_name,'liste_dataset':liste_dataset,
-                                                    'filename':filename,})
-    elif action=="action2":
-        fs = gridfs.GridFS(db)
-        grid_out = fs.find_one({"metadata.username": username, 'metadata.filename': filename,'metadata.project_name':project_name})
-        if grid_out:
-            file_data = BytesIO(grid_out.read())
-            df = pd.read_csv(file_data,sep=',',on_bad_lines='warn')
-            df = magic_clean(df)
-            save_dataset(filename,project_name,username,df)
-            dico_info=read_csv(username,project_name,filename)
-            table_html,df=df_to_html(username,filename,project_name)      
-            dico_type=colonne_type(df)
-            rows = df.to_dict(orient='records')
-            columns=df.columns
-            return render(request,'project.html',{'username':username,'project_name':project_name,'liste_dataset':liste_dataset,
-                                            'filename':filename,'dico_info':dico_info,'table_html':table_html,'dico_type':dico_type,
-                                            'df':df,'rows':rows,'columns':columns})
-        else:
-            return render(request,'project.html',{'username':username,'project_name':project_name,'liste_dataset':liste_dataset,
-                                                    'filename':filename,})
-    elif action=="action3":
-        print(filename)
-        msg=delete_dataset(filename,username,project_name)
-        projet=collection.find_one({'username':username,'nom_projet':project_name})
-        liste_dataset=projet['data_set']
+                                                'filename':filename,'dico_info':dico_info,'table_html':table_html,'dico_type':dico_type,
+                                                'df':df,'rows':rows,'columns':columns})
+        elif action=="action1" :
+            fs = gridfs.GridFS(db)
+            grid_out = fs.find_one({"metadata.username": username, 'metadata.filename': filename,'metadata.project_name':project_name})
+            if grid_out:
+                file_data = BytesIO(grid_out.read())
+                df = pd.read_csv(file_data,sep=',',on_bad_lines='warn')
+                categorical_columns, numerical_columns = type_column(df)
+                return render(request,'process_dataset.html',{'project_name':project_name,'filename':filename,'username':username,
+                                                        'categorical_columns':categorical_columns,'numerical_columns':numerical_columns})
+            else:
+                return render(request,'project.html',{'username':username,'project_name':project_name,'liste_dataset':liste_dataset,
+                                                        'filename':filename,})
+        elif action=="action2":
+            fs = gridfs.GridFS(db)
+            grid_out = fs.find_one({"metadata.username": username, 'metadata.filename': filename,'metadata.project_name':project_name})
+            if grid_out:
+                file_data = BytesIO(grid_out.read())
+                df = pd.read_csv(file_data,sep=',',on_bad_lines='warn')
+                df = magic_clean(df)
+                save_dataset(filename,project_name,username,df)
+                dico_info=read_csv(username,project_name,filename)
+                table_html,df=df_to_html(username,filename,project_name)      
+                dico_type=colonne_type(df)
+                rows = df.to_dict(orient='records')
+                columns=df.columns
+                return render(request,'project.html',{'username':username,'project_name':project_name,'liste_dataset':liste_dataset,
+                                                'filename':filename,'dico_info':dico_info,'table_html':table_html,'dico_type':dico_type,
+                                                'df':df,'rows':rows,'columns':columns})
+            else:
+                return render(request,'project.html',{'username':username,'project_name':project_name,'liste_dataset':liste_dataset,
+                                                        'filename':filename,})
+        elif action=="action3":
+            print(filename)
+            msg=delete_dataset(filename,username,project_name)
+            projet=collection.find_one({'username':username,'nom_projet':project_name})
+            liste_dataset=projet['data_set']
+            return render(request,'project.html',{'username':username,'project_name':project_name,'liste_dataset':liste_dataset})
+    else :
         return render(request,'project.html',{'username':username,'project_name':project_name,'liste_dataset':liste_dataset})
 
 @login_required
@@ -253,9 +256,7 @@ def delete_dataset(filename,username,project_name):
         file_id=file._id
         fs.delete(file_id)
         user_project=collection.find_one({"username":username,"nom_projet":project_name})
-        dataset = user_project.get('data_set', {})
-        print(dataset)
-        print(filename)
+        dataset = user_project.get('data_set', [])
         dataset.remove(filename)
         collection.update_one({"username": username, "nom_projet": project_name},{"$set": {"data_set": dataset}})
     return {"success": True, "message": "Dataset supprimé avec succès."}

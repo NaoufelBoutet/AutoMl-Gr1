@@ -50,7 +50,8 @@
         </h2>
         <div >
             {% if liste_dataset %}
-            <form method="get" action="{% url 'project' project_name=project_name %}">
+            <form method="post" action="{% url 'project' project_name=project_name %}">
+                {% csrf_token %}
                 <label for="dataset-select">Choisissez un dataset :</label>
                 <select id="dataset-select" name="filename" required>
                     <option value="" disabled selected>-- Sélectionnez un dataset --</option>
