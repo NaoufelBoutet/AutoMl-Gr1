@@ -29,12 +29,20 @@
                 <h2>Gestion des valeurs manquantes</h2>
                 <form method="post" action="{% url 'project' project_name=project_name %}">
                     {% csrf_token %}
-                    <p>Choisissez une méthode pour gérer les valeurs manquantes :</p>
-                    <label><input type="radio" name="missing_method" value="drop_rows"> Supprimer les lignes avec des valeurs manquantes</label><br>
-                    <label><input type="radio" name="missing_method" value="drop_columns"> Supprimer les colonnes avec des valeurs manquantes</label><br>
-                    <label><input type="radio" name="missing_method" value="fill_mean"> Remplir par la moyenne</label><br>
-                    <label><input type="radio" name="missing_method" value="fill_median"> Remplir par la médiane</label><br>
-                    <button type="submit">Appliquer</button>
+                    <label for="column-select">Choisissez une colonne:</label>
+                    <select id="column-select" name="column_sel" required>
+                        <option value="" disabled selected>-- Sélectionnez une colonne --</option>
+                        {% for column in columns %}
+                            <option value="{{ column }}">{{ column }}</option>
+                        {% endfor %}
+                    </select>
+                    <label for="method-select">Choisissez une methode:</label>
+                    <select id="method-select" name="method_sel" required>
+                        <option value="" disabled selected>-- Sélectionnez une methode --</option>
+                        {% for method in methods %}
+                            <option value="{{ method }}">{{ method }}</option>
+                        {% endfor %}
+                    </select>
                 </form>
             </section>
     

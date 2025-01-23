@@ -16,15 +16,18 @@ def home_data(request):
 
 @login_required
 def liste_project(request):
-    username=request.user.username
-    id=request.user.id
-    list_project=get_project_by_user(username,id)
+    username = request.user.username
+    id = request.user.id   
+    list_project = get_project_by_user(username, id)  
+    print("1:",list_project)
     if request.method == 'POST':
         action = request.POST.get('action_liste_prj', None)
         projet = request.POST.get('projet', None)
-        if action=='action1':
-            delete_project(username,projet)
-    return render(request, 'liste_project.html',{'username' : username,'projects' : list_project})
+        if action == 'action1':
+            delete_project(username, projet)  
+            list_project = get_project_by_user(username, id)  
+            print("2",list_project)
+    return render(request, 'liste_project.html', {'username': username, 'projects': list_project})
 
 @login_required
 def project(request,project_name):
@@ -32,6 +35,10 @@ def project(request,project_name):
     db, client = get_db_mongo('Auto_ML','localhost',27017)
     collection = db['Projet']
     projet=collection.find_one({'username':username,'nom_projet':project_name})
+    if not projet :
+        id = request.user.id   
+        list_project = get_project_by_user(username, id) 
+        return render(request, 'liste_project.html', {'username': username, 'projects': list_project})
     liste_dataset=projet['data_set']
     if request.method == 'POST':
         filename = request.POST.get('filename', None)
@@ -145,7 +152,12 @@ def process_dataset(request,project_name):
         file_data = BytesIO(grid_out.read())
         df = pd.read_csv(file_data,sep=',',on_bad_lines='warn')
         categorical_columns, numerical_columns = type_column(df)
-    return render(request, 'process_dataset.html', {'username':username,'project_name':project_name,
+        columns=df.columns
+    else:
+        columns=None
+    methods=['drop row','drop column','fill median','fill mean']
+    print('ouuuuuiiiii')
+    return render(request, 'process_dataset.html', {'username':username,'project_name':project_name,'columns':columns,'methods':methods,
                                                     'categorical_columns':categorical_columns,'numerical_columns':numerical_columns})
 
 def read_csv(username, project_name, filename):
@@ -269,7 +281,7 @@ def delete_project(username,project_name):
     db, client = get_db_mongo('Auto_ML','localhost',27017)
     collection = db['Projet']
     fs = gridfs.GridFS(db)
-    project = fs.find_one({"metadata.username": username,"metadata.project_name":project_name})
+    project = collection.find_one({"username": username,"nom_projet":project_name})
     if not project:
         return None
     else :
@@ -282,6 +294,6 @@ def delete_project(username,project_name):
                 else :
                     file_id=file._id
                     fs.delete(file_id)
-        project_id=project._id
-        collection.delete_one(project_id)
+        project_id=project.get('_id')
+        collection.delete_one({'_id':project_id})
         return {"success": True, "message": "Projet supprimé avec succès."}
