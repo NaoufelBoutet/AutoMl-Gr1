@@ -24,12 +24,22 @@
                 </div>
             </a>
             </nav>
+        <h1>Page pour créer un projet</h1>
+        <div>
+            <form method="POST"  action="{% url 'creer_project' %}">
+                {% csrf_token %}
+                
+                <label for="projet">Creer un projet :</label>
+                <input type="text" id="nom_projet" name="nom_projet" placeholder="Entrez le nom du projet" required minlength="3" maxlength="100">
+                <button type="submit">Creer</button>
+            </form>
+
+        </div>
         <h1>Page pour regarder les projet</h1>
         <div >
             {% if projects %}
                 <ul>
                     {% for project in projects %}
-                        <a href="{% url 'project'  project_name=project.nom_projet %}">{{ project.nom_projet }}</a>
                         <div class="card-container">
                             <div class="card">
                               <header class="card-header header-img">
@@ -49,17 +59,5 @@
                 <p>Aucun projet trouvé.</p>
             {% endif %}
         </div>
-        <h1>Page pour créer un projet</h1>
-        <div>
-            <form method="POST"  action="{% url 'creer_project' %}">
-                {% csrf_token %}
-                
-                <label for="projet">Creer un projet :</label>
-                <input type="text" id="nom_projet" name="nom_projet" placeholder="Entrez le nom du projet" required minlength="3" maxlength="100">
-                <button type="submit">Creer</button>
-            </form>
-
-        </div>
-
     </body>
 </html>
