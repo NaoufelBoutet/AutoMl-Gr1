@@ -3,6 +3,7 @@
         <title>Espace result</title>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
+        {% load filters %}
         {% load static %}
         <script src="{% static 'scripts.js' %}"></script>
         <link rel="stylesheet" href="{% static 'style.css' %}">
@@ -27,17 +28,17 @@
         <main>
             <section>
                 <h2>Gestion des valeurs manquantes</h2>
-                <form method="post" action="{% url 'project' project_name=project_name %}">
+                <form method="post" action="{% url 'process_dataset' project_name=project_name filename=filename%}">
                     {% csrf_token %}
                     <label for="column-select">Choisissez une colonne:</label>
-                    <select id="column-select" name="column_sel" required>
+                    <select id="column-select" name="column" required>
                         <option value="" disabled selected>-- Sélectionnez une colonne --</option>
                         {% for column in columns %}
                             <option value="{{ column }}">{{ column }}</option>
                         {% endfor %}
                     </select>
                     <label for="method-select">Choisissez une methode:</label>
-                    <select id="method-select" name="method_sel" required>
+                    <select id="method-select" name="method" required>
                         <option value="" disabled selected>-- Sélectionnez une methode --</option>
                         {% for method in methods %}
                             <option value="{{ method }}">{{ method }}</option>
@@ -49,7 +50,7 @@
     
             <section>
                 <h2>Encodage des variables catégoriques</h2>
-                <form method="post" action="{% url 'project' project_name=project_name %}">
+                <form method="post" action="{% url 'process_dataset' project_name=project_name filename=filename%}">
                     {% csrf_token %}
                     <p>Sélectionnez les colonnes catégoriques à encoder :</p>
                     <select name="categorical_columns" multiple>

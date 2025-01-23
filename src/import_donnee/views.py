@@ -148,21 +148,21 @@ def process_dataset(request,project_name,filename):
         file_data = BytesIO(grid_out.read())
         df = pd.read_csv(file_data,sep=',',on_bad_lines='warn')
         categorical_columns, numerical_columns = type_column(df)
-        columns=df.columns   
-        dico_type=colonne_type(df)
-        rows = df.to_dict(orient='records')
-        columns=df.columns
+        columns,dico_type,rows=afficher_df(df)
         if request.method == 'POST':
             action=request.POST.get('action_process',None)
             if action=='action1':
                 col = request.POST.get('column', None)
                 method = request.POST.get('method', None)
-                df=valeurs_manquantes(df,col, method)
+                print(col, method)
+                df=valeurs_manquantes(df,col,method)
+                columns,dico_type,rows=afficher_df(df)
+                print(columns)
     else:
         columns,df,dico_type,rows=None,None,None,None
     return render(request, 'process_dataset.html', {'username':username,'project_name':project_name,'columns':columns,'methods':methods,
                                                     'categorical_columns':categorical_columns,'numerical_columns':numerical_columns,'df':df,
-                                                    'dico_type':dico_type,'rows':rows})
+                                                    'dico_type':dico_type,'rows':rows,'filename':filename})
 
 def read_csv(username, project_name, filename):
     db, client = get_db_mongo('Auto_ML','localhost',27017)
@@ -264,6 +264,12 @@ def colonne_type(df):
         col: type(df[col].iloc[0]).__name__ if len(df[col]) > 0 else 'NoneType'
         for col in df.columns
     }
+
+def afficher_df(df):
+    columns=df.columns   
+    dico_type=colonne_type(df)
+    rows = df.to_dict(orient='records')
+    return columns,dico_type,rows
 
 def delete_dataset(filename,username,project_name):
     db, client = get_db_mongo('Auto_ML','localhost',27017)
