@@ -27,7 +27,11 @@
                 Espace Perso
                 </div>
             </a>
-            
+            <a href="{% url 'liste_project' %}" class="a_nav_black">
+                <div class="nav_police_black">
+                Project
+                </div>
+            </a>
         </nav>
         <br><br>
         <form method="POST" enctype="multipart/form-data" action="{% url 'upload_csv' project_name %}">

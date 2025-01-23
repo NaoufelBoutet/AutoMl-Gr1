@@ -94,3 +94,85 @@
     border-radius: 8px;
     background-color: #f9f9f9;
 }
+
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;1,100;1,200;1,300;1,400;1,500;1,600&display=swap');
+
+* {
+  font-family: 'Montserrat', sans-serif;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --padding: 1rem;
+}
+
+.card-container {
+  margin: 1rem;
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  algin-items: center;
+}
+
+.card {
+  background: white;
+  box-shadow: 0 2px 5px 1px rgba(0, 0, 0, .25);
+  border-radius: .50rem;
+  overflow: hidden;
+}
+
+.card-header .header-title {
+  padding: 0 var(--padding);
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+  margin-top: 1rem;
+}
+
+.card-body {
+  color: rgb(173, 173, 173);
+  font-size: .9rem;
+  padding: 0 var(--padding);
+  margin-bottom: 1rem;
+}
+
+.card-footer {
+  padding: var(--padding);
+  padding-top: 0;
+}
+
+.btn {
+  border: none;
+  background-color: hsl(257, 100%, 80%);
+  padding: .75em 1.5em;
+  border-radius: .25em;
+  transition: background-color 200ms ease;
+  font-weight: 500;
+  margin-right: 5px;
+  cursor: pointer;
+}
+
+.btn:hover {
+    background-color: hsl(257, 100%, 72%);
+}
+
+.card-header.header-img {
+  padding: 0;
+  overflow: hidden;
+}
+
+.card-header.header-img > img {
+  display: block;
+  width: 100%;
+  max-height: 200px;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  object-position: center;
+  transition: filter 200ms ease-in-out;
+} 
+
+.card:hover > .card-header.header-img > img {
+	filter: brightness(0.9);
+}
