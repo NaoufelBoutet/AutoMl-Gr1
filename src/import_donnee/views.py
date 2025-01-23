@@ -59,11 +59,7 @@ def project(request,project_name):
             fs = gridfs.GridFS(db)
             grid_out = fs.find_one({"metadata.username": username, 'metadata.filename': filename,'metadata.project_name':project_name})
             if grid_out:
-                file_data = BytesIO(grid_out.read())
-                df = pd.read_csv(file_data,sep=',',on_bad_lines='warn')
-                categorical_columns, numerical_columns = type_column(df)
-                return render(request,'process_dataset.html',{'project_name':project_name,'filename':filename,'username':username,
-                                                        'categorical_columns':categorical_columns,'numerical_columns':numerical_columns})
+                return redirect('process_dataset',project_name,filename)
             else:
                 return render(request,'project.html',{'username':username,'project_name':project_name,'liste_dataset':liste_dataset,
                                                         'filename':filename,})
@@ -142,9 +138,9 @@ def creer_project(request):
     return redirect('liste_project')
 
 @login_required
-def process_dataset(request,project_name):
+def process_dataset(request,project_name,filename):
+    methods=['drop','mode','median','mean']
     username=request.user.username
-    filename = request.GET.get('filename', None)
     db, client = get_db_mongo('Auto_ML','localhost',27017)
     fs = gridfs.GridFS(db)
     grid_out = fs.find_one({"metadata.username": username, 'metadata.filename': filename,'metadata.project_name':project_name})
@@ -152,13 +148,21 @@ def process_dataset(request,project_name):
         file_data = BytesIO(grid_out.read())
         df = pd.read_csv(file_data,sep=',',on_bad_lines='warn')
         categorical_columns, numerical_columns = type_column(df)
+        columns=df.columns   
+        dico_type=colonne_type(df)
+        rows = df.to_dict(orient='records')
         columns=df.columns
+        if request.method == 'POST':
+            action=request.POST.get('action_process',None)
+            if action=='action1':
+                col = request.POST.get('column', None)
+                method = request.POST.get('method', None)
+                df=valeurs_manquantes(df,col, method)
     else:
-        columns=None
-    methods=['drop row','drop column','fill median','fill mean']
-    print('ouuuuuiiiii')
+        columns,df,dico_type,rows=None,None,None,None
     return render(request, 'process_dataset.html', {'username':username,'project_name':project_name,'columns':columns,'methods':methods,
-                                                    'categorical_columns':categorical_columns,'numerical_columns':numerical_columns})
+                                                    'categorical_columns':categorical_columns,'numerical_columns':numerical_columns,'df':df,
+                                                    'dico_type':dico_type,'rows':rows})
 
 def read_csv(username, project_name, filename):
     db, client = get_db_mongo('Auto_ML','localhost',27017)
@@ -297,3 +301,14 @@ def delete_project(username,project_name):
         project_id=project.get('_id')
         collection.delete_one({'_id':project_id})
         return {"success": True, "message": "Projet supprimé avec succès."}
+
+def valeurs_manquantes(df,col, missing_strategy):
+    if missing_strategy == "mean":
+        df[col].fillna(df[col].mean(), inplace=True)
+    elif missing_strategy == "median":
+        df[col].fillna(df[col].median(), inplace=True)
+    elif missing_strategy == "mode":
+        df[col].fillna(df[col].mode()[0], inplace=True)
+    elif missing_strategy == "drop":
+        df.dropna(subset=[col], inplace=True)
+    return df

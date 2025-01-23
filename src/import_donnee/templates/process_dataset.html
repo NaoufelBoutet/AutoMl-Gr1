@@ -43,6 +43,7 @@
                             <option value="{{ method }}">{{ method }}</option>
                         {% endfor %}
                     </select>
+                    <button type="submit" name="action_process" value="action1">Appliquer</button>
                 </form>
             </section>
     
@@ -80,24 +81,30 @@
     
             <section>
                 <h2>Aperçu du dataset</h2>
-                <table>
+                {% if dico_type and rows %}
+            <div>
+                <table id="dataframe-table" class="display">
                     <thead>
                         <tr>
-                            {% for column in preview.columns %}
-                                <th>{{ column }}</th>
+                            {% for col in columns %}
+                                <th>{{ col }} ({{ dico_type|dict_get:col }})</th>
                             {% endfor %}
                         </tr>
                     </thead>
                     <tbody>
-                        {% for row in preview.rows %}
+                        {% for row in rows %}
                             <tr>
-                                {% for cell in row %}
-                                    <td>{{ cell }}</td>
+                                {% for col in columns %}
+                                    <td>{{ row|dict_get:col }}</td>
                                 {% endfor %}
                             </tr>
                         {% endfor %}
                     </tbody>
                 </table>
+            </div>
+            {% else %}
+            <p>Le DataFrame est vide ou non défini.</p>
+            {% endif %}
             </section>
         </main>
     </body>
