@@ -4,6 +4,39 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <style>
+        
+        nav a {
+    margin-right: 15px;
+    text-decoration: none;
+        }
+
+        nav a:hover {
+            text-decoration: underline;
+        }
+
+        nav form {
+            margin: 0;
+            display: inline;
+        }
+
+        nav button {
+            background: none; /* Supprime le fond */
+            border: none; /* Supprime le cadre */
+            padding: 0; /* Supprime les marges internes */
+            margin: 0; /* Supprime les marges externes */
+            font-size: 13px; /* Inhère la taille de la police */
+            color: #611f9f;
+            cursor: pointer; /* Ajoute le curseur de clic */
+            text-decoration: none; /* Supprime tout soulignement */
+        }
+
+        nav button:hover {
+            text-decoration: underline; /* Ajoute un soulignement au survol */
+        }
+
+    </style>
+        
 </head>
 <body>
     <nav>
@@ -20,16 +53,52 @@
         {% if user.is_authenticated %}
         <a href="{% url 'projects' %}">projects</a>
         {% endif %}
+
+        <form method="post" action="{% url 'cleanning' %}">
+            {% csrf_token %}
+            <input type="hidden" name="project_name" value="{{ project_name }}">
+            <input type="hidden" name="dataset_name" value="{{ dataset_name }}">
+            <button type="submit" class="btn btn-primary">Revenir à vos datas</button>
+        </form>
     
 </nav>
-    <h1>Projet {{ project_name }}</h1>
-    <form method="post" action="{% url 'cleanning' %}">
+    <h1>Projet: {{ project_name }}</h1>
+    
+
+    <h1>Nettoyage du Dataset: {{ dataset_name }}</h1>
+
+
+    <h2>Formulaire de gestion des valeurs manquantes</h2>
+
+    
+    <form method="post" action="{% url 'imputation' %}">
         {% csrf_token %}
+        <label for="column">Column:</label>
         <input type="hidden" name="project_name" value="{{ project_name }}">
         <input type="hidden" name="dataset_name" value="{{ dataset_name }}">
-        <button type="submit" class="btn btn-primary">Revenir à vos datas</button>
-    </form>
+        <select id="column" name="column" required>
+            <option value="" disabled selected>Sélectionnez une colonne</option>
+            {% for column in columns %}
+                <option value="{{ column }}">{{ column }}</option>
+            {% endfor %}
+        </select><br><br>
 
-    <h1>Nettoyage du Dataset {{ dataset_name }}</h1>
+        <label for="strategy">Strategy:</label>
+        <select id="strategy" name="strategy" required>
+            <option value="" disabled selected>Sélectionnez une stratégie</option>
+            <option value="mean">Mean</option>
+            <option value="median">Median</option>
+            <option value="mode">Mode</option>
+            <option value="drop">Drop</option>
+        </select><br><br>
+
+        <button type="submit">Exécuter</button>
+    </form>
+    
+</div>
+
+
+
+    
      
 </html>

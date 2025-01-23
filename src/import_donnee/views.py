@@ -9,12 +9,21 @@ from io import BytesIO
 from django.contrib.auth.decorators import login_required
 import datetime
 from django.contrib import messages
-from . import forms
+
 
 
 @login_required
 def accueil(request):
-     return render(request, "accueil.html")
+    db, client = get_db_mongo('Auto_ML', 'localhost', 27017)
+    col = db["User"]
+    user_id = str(request.user.id)
+    user_doc = col.find_one({'_id': user_id})
+    
+    # Extraire uniquement les noms des projets
+    project_names = [project['name'] for project in user_doc.get('projects', [])] if user_doc else []
+    client.close()
+    
+    return render(request, 'accueil.html', {'project_names': project_names})
 
 
 @login_required
@@ -49,9 +58,23 @@ def create_project(request):
         )
         client.close()
         messages.success(request, f"Le projet '{project_name}' a été créé avec succès.")
-        return render(request, 'accueil.html')
+        return redirect('accueil')
 
     return render(request, 'accueil.html')
+
+@login_required
+def delete_project(request):
+    if request.method == 'POST':
+        db, client = get_db_mongo('Auto_ML', 'localhost', 27017)
+        col = db["User"]
+        project_name = request.POST.get('project_name')
+        user_id = str(request.user.id)
+        col.update_one(
+            {'_id': user_id},
+            {'$pull': {'projects': {'name': project_name}}})
+        client.close()
+        messages.success(request, f"Le projet '{project_name}' a été supprimé avec succès.")
+        return redirect('accueil')
 
 
 @login_required
@@ -90,7 +113,6 @@ def projet_data(request):
 def upload_fichier(request):
     if request.method == 'POST':
         project_name = request.POST.get('projet_name')
-        print(project_name)
         db, client = get_db_mongo('Auto_ML', 'localhost', 27017)
         col = db["User"]
         user_id = str(request.user.id)
@@ -165,6 +187,9 @@ def dataset_info(request):
         project = next((p for p in projects if p['name'] == project_name), None)
         dataset_names = [dataset['dataset_name'] for dataset in project.get('data', [])]
         dataset = next((d for d in project.get('data', []) if d['dataset_name'] == dataset_name), None)
+        data = dataset.get('data', [])
+        df = pd.DataFrame(data)
+        columns = df.columns
         if action == "action1":
             try:
                 df = pd.DataFrame(dataset['data'])
@@ -186,11 +211,22 @@ def dataset_info(request):
             except Exception as e:
                 messages.error(request, f"Erreur lors de l'analyse du dataset : {str(e)}")
                 client.close()
-                return render(request,'projet_dataset.html',{"project_name":project_name,'dataset_name': dataset_name,'dataset_name':dataset_name})
+                return render(request,'projet_dataset.html',{"project_name":project_name,'dataset_name': dataset_name,'dataset_names':dataset_names})
         elif action == "action2":
-            return render(request,'nettoyage.html',{"project_name":project_name,"dataset_name":dataset_name,'dataset_name':dataset_name})
+            return render(request,'nettoyage.html',{"columns":columns,"project_name":project_name,"dataset_name":dataset_name,'dataset_names':dataset_names})
+        elif action == "action3":
+            col.update_one(
+            {'_id': user_id, 'projects.name': project_name},
+            {'$pull': {'projects.$.data': {'dataset_name': dataset_name}}})
+            user_doc = col.find_one({'_id': user_id})
+            projects = user_doc.get('projects', [])
+            project = next((p for p in projects if p['name'] == project_name), None)
+            dataset_names = [dataset['dataset_name'] for dataset in project.get('data', [])]
+            client.close()
+            messages.success(request, f"Le dataset '{dataset_name}' a été supprimé avec succès.")
+            return render(request, 'projet_dataset.html', {"project_name": project_name, "dataset_names": dataset_names})
     else:
-        return render(request,'projet_dataset.html',{"project_name":project_name,'dataset_name': dataset_name,'dataset_name':dataset_name})
+        return render(request,'projet_dataset.html',{"project_name":project_name,'dataset_name': dataset_name,'dataset_names':dataset_names})
 
 def cleanning(request):
      if request.method == "POST":
@@ -206,8 +242,41 @@ def cleanning(request):
         return render(request,'projet_dataset.html',{"project_name":project_name,"dataset_names":dataset_names})
 
 
-  
+def imputation(request):
+    if request.method == "POST":
+        project_name = request.POST.get('project_name')
+        dataset_name = request.POST.get('dataset_name')
+        column = request.POST.get('column')
+        strategy = request.POST.get('strategy')
+        db, client = get_db_mongo('Auto_ML', 'localhost', 27017)
+        col = db["User"]
+        user_id = str(request.user.id)
+        user_doc = col.find_one({'_id': user_id})
+        projects = user_doc.get('projects', [])
+        project = next((p for p in projects if p['name'] == project_name), None)
+        datasets = project.get('data', [])
+        dataset = next((d for d in datasets if d['dataset_name'] == dataset_name), None)
+        data = dataset.get('data', [])
+        df = pd.DataFrame(data)
+        columns = df.columns
+        df = valeurs_manquantes(df, column, strategy)
+        print("df",df)
+        col.update_one(
+            {'_id': user_id, 'projects.name': project_name, 'projects.data.dataset_name': dataset_name},
+            {'$set': {'projects.$.data.$[elem].data': df.to_dict('records')}},
+            array_filters=[{"elem.dataset_name": dataset_name}]
+        )
+        return render(request,'nettoyage.html',{"project_name":project_name,"dataset_name":dataset_name,"columns":columns})
 
-
+def valeurs_manquantes(df, col, missing_strategy):
+    if missing_strategy == "mean":
+        df[col].fillna(df[col].mean(), inplace=True)
+    elif missing_strategy == "median":
+        df[col].fillna(df[col].median(), inplace=True)
+    elif missing_strategy == "mode":
+        df[col].fillna(df[col].mode()[0], inplace=True)
+    elif missing_strategy == "drop":
+        df.dropna(subset=[col], inplace=True)
+    return df
 
 
