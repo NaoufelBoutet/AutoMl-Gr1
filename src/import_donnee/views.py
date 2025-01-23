@@ -19,6 +19,11 @@ def liste_project(request):
     username=request.user.username
     id=request.user.id
     list_project=get_project_by_user(username,id)
+    if request.method == 'POST':
+        action = request.POST.get('action_liste_prj', None)
+        projet = request.POST.get('projet', None)
+        if action=='action1':
+            delete_project(username,projet)
     return render(request, 'liste_project.html',{'username' : username,'projects' : list_project})
 
 @login_required
@@ -157,7 +162,6 @@ def read_csv(username, project_name, filename):
         return {'username':username,'ligne':ligne,'colonne':colonne,
                 'nb_nul':nb_nul,'nb_colonne_double':nb_colonne_double}
 
-
 def df_to_html(username,filename,project_name):
     db, client = get_db_mongo('Auto_ML','localhost',27017)
     fs = gridfs.GridFS(db)
@@ -260,3 +264,24 @@ def delete_dataset(filename,username,project_name):
         dataset.remove(filename)
         collection.update_one({"username": username, "nom_projet": project_name},{"$set": {"data_set": dataset}})
     return {"success": True, "message": "Dataset supprimé avec succès."}
+
+def delete_project(username,project_name):
+    db, client = get_db_mongo('Auto_ML','localhost',27017)
+    collection = db['Projet']
+    fs = gridfs.GridFS(db)
+    project = fs.find_one({"metadata.username": username,"metadata.project_name":project_name})
+    if not project:
+        return None
+    else :
+        files=project.get('data_set', [])
+        if files :
+            for filename in files:
+                file = fs.find_one({"metadata.username": username,"metadata.project_name":project_name,"metadata.filename":filename})
+                if not file:
+                    pass
+                else :
+                    file_id=file._id
+                    fs.delete(file_id)
+        project_id=project._id
+        collection.delete_one(project_id)
+        return {"success": True, "message": "Projet supprimé avec succès."}

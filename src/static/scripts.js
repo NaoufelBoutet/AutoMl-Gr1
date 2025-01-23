@@ -80,5 +80,35 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 });
+document.getElementById("delete_btn").addEventListener("click", function() {
+    // Afficher la boîte de confirmation
+    var confirmation = confirm("Êtes-vous sûr ?");
+    
+    if (confirmation) {
+      // Récupérer la valeur de 'name' et 'value' du bouton
+      var actionName = this.getAttribute("name"); // Récupère le 'name' du bouton
+      var actionValue = this.getAttribute("value"); // Récupère le 'value' du bouton
+      var csrfToken = "{{ csrf_token }}";  // CSRF Token pour la sécurité
 
+      var xhr = new XMLHttpRequest();
+      xhr.open("POST", "{% url 'liste_project' %}", true);
+      xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+      xhr.setRequestHeader("X-CSRFToken", csrfToken);
 
+      xhr.onreadystatechange = function() {
+        if (xhr.readyState == 4 && xhr.status == 200) {
+          // Quand la réponse est reçue avec succès
+          document.getElementById("project-info").innerHTML = xhr.responseText;
+
+          // Recharge la page après l'exécution
+          location.reload(); // Recharge la page après l'exécution de la fonction
+        }
+      };
+
+      // Envoyer les données (ici le nom du projet et la valeur de l'action)
+      xhr.send(actionName + "=" + actionValue);  // envoyer les valeurs 'name' et 'value' dans la requête
+    } else {
+      // Si l'utilisateur a annulé, ne rien faire
+      console.log("L'utilisateur a annulé l'action.");
+    }
+  });
