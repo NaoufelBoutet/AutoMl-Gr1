@@ -116,66 +116,71 @@
             </section>
         </main>
         <script>
-        const numericalColumns = [
-            {% for column in numerical_columns %}
-                "{{ column }}",
-            {% endfor %}
-        ];
-
-        const allColumns = [
-            {% for column in columns %}
-                "{{ column }}",
-            {% endfor %}
-        ];
-
-        const methodCol = {
-            "drop": "columns",
-            "mode": "numerical_columns",
-            "median": "numerical_columns",
-            "mean": "numerical_columns"
-        };
-
-        function updateMethodOptions() {
-    const columnSelect = document.getElementById("column-select");
-    const methodSelectContainer = document.getElementById("method-select-container");
-    const methodSelect = document.getElementById("method-select");
-
-            // Récupérer la colonne sélectionnée et la nettoyer
-            const selectedColumn = columnSelect.value.trim();  // Nettoyer les espaces
-            console.log("Selected Column:", selectedColumn); // Debug log
-
-            if (selectedColumn) {
-                // Vérifier si la colonne sélectionnée est numérique
-                const isNumerical = numericalColumns.map(col => col.trim()).includes(selectedColumn);  // Nettoyer les colonnes numériques
-                console.log("Is Selected Column Numerical?:", isNumerical); // Debug log
-
-                // Récupérer les méthodes disponibles en fonction du type de colonne
-                let availableMethods = [];
-                for (const [method, colType] of Object.entries(methodCol)) {
-                    if ((colType === "numerical_columns" && isNumerical) || (colType === "columns" && !isNumerical)) {
-                        availableMethods.push(method);
+            // Utilisation de escapejs pour éviter les entités HTML dans les colonnes
+            const numericalColumns = [
+                {% for column in numerical_columns %}
+                    "{{ column|escapejs }}",  // Utiliser escapejs pour éviter les caractères spéciaux HTML
+                {% endfor %}
+            ];
+        
+            const allColumns = [
+                {% for column in columns %}
+                    "{{ column|escapejs }}",  // Utiliser escapejs pour éviter les caractères spéciaux HTML
+                {% endfor %}
+            ];
+        
+            const methodCol = {
+                "drop": "columns",    // drop peut être appliqué à toutes les colonnes
+                "mode": "numerical_columns",
+                "median": "numerical_columns",
+                "mean": "numerical_columns"
+            };
+        
+            function updateMethodOptions() {
+                const columnSelect = document.getElementById("column-select");
+                const methodSelectContainer = document.getElementById("method-select-container");
+                const methodSelect = document.getElementById("method-select");
+        
+                // Récupérer la colonne sélectionnée et la nettoyer
+                const selectedColumn = columnSelect.value.trim();  // Nettoyer les espaces
+                console.log("Selected Column:", selectedColumn); // Debug log
+        
+                if (selectedColumn) {
+                    // Vérifier si la colonne sélectionnée est numérique
+                    const isNumerical = numericalColumns.includes(selectedColumn);  // Vérification simple avec includes
+                    console.log("Is Selected Column Numerical?:", isNumerical); // Debug log
+        
+                    // Récupérer les méthodes disponibles en fonction du type de colonne
+                    let availableMethods = [];
+        
+                    // Ajouter "drop" pour toutes les colonnes
+                    availableMethods.push("drop");
+        
+                    // Ajouter les méthodes pour les colonnes numériques
+                    if (isNumerical) {
+                        availableMethods.push("mean", "median", "mode"); // Ajoute les méthodes numériques
                     }
+        
+                    // Réinitialiser la liste des méthodes
+                    methodSelect.innerHTML = '<option value="" disabled selected>-- Sélectionnez une méthode --</option>';
+        
+                    // Ajouter les méthodes disponibles comme options
+                    availableMethods.forEach(method => {
+                        const option = document.createElement("option");
+                        option.value = method;
+                        option.textContent = method;
+                        methodSelect.appendChild(option);
+                    });
+        
+                    // Afficher la liste déroulante des méthodes
+                    methodSelectContainer.style.display = "block";
+                } else {
+                    // Si aucune colonne n'est sélectionnée, masquer la liste des méthodes
+                    methodSelectContainer.style.display = "none";
                 }
-                console.log("Available Methods:", availableMethods); // Debug log
-
-                // Réinitialiser la liste des méthodes
-                methodSelect.innerHTML = '<option value="" disabled selected>-- Sélectionnez une méthode --</option>';
-
-                // Ajouter les méthodes disponibles comme options
-                availableMethods.forEach(method => {
-                    const option = document.createElement("option");
-                    option.value = method;
-                    option.textContent = method;
-                    methodSelect.appendChild(option);
-                });
-
-                // Afficher la liste déroulante des méthodes
-                methodSelectContainer.style.display = "block";
-            } else {
-                // Si aucune colonne n'est sélectionnée, masquer la liste des méthodes
-                methodSelectContainer.style.display = "none";
             }
-        }
-    </script>
+        </script>
+        
+        
     </body>
 </html>
