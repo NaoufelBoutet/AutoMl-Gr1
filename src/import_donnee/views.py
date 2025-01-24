@@ -8,6 +8,7 @@ from django.urls import reverse
 import pandas as pd
 from io import BytesIO
 from django.contrib.auth.decorators import login_required
+import re
 
 @login_required
 def home_data(request):
@@ -176,7 +177,7 @@ def process_dataset(request, project_name, filename, a):
             request.session['df'] = df.to_dict()
 
             columns, dico_type, rows = afficher_df(df)
-
+    a=1
     return render(request, 'process_dataset.html', {'username': username,'project_name': project_name,'columns': columns,'methods': methods,
         'categorical_columns': categorical_columns,'numerical_columns': numerical_columns,'df': df,'dico_type': dico_type,'rows': rows,
         'filename': filename,'method_col': method_col,'a': a})
@@ -236,7 +237,8 @@ def get_file_csv_by_user(username):
 
 def magic_clean(df):
     for col in df.select_dtypes(include=['object']).columns:
-        df[col] = df[col].str.replace(r'[\s\x00-\x1F\x7F-\x9F]+', '', regex=True)
+        df[col] = df[col].astype(str).str.replace(r'[\s\x00-\x1F\x7F-\x9F]+', '', regex=True)
+        df[col] = pd.to_numeric(df[col], errors='ignore')
         df[col] = df[col].str.replace(',', '.', regex=False)
         try :
             converted = pd.to_numeric(df[col], errors='raise')
@@ -255,7 +257,7 @@ def magic_clean(df):
     return df
 
 def type_column(df):
-    df = magic_clean(df)
+    df=magic_clean(df)
     categorical_column=df.select_dtypes(include=["category",'object']).columns.tolist()
     numerical_column=df.select_dtypes(include=['number']).columns.tolist()
     return categorical_column, numerical_column
