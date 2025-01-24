@@ -59,7 +59,7 @@ def project(request,project_name):
             fs = gridfs.GridFS(db)
             grid_out = fs.find_one({"metadata.username": username, 'metadata.filename': filename,'metadata.project_name':project_name})
             if grid_out: 
-                return redirect('process_dataset',project_name,filename)
+                return redirect('process_dataset',project_name,filename,0)
             else:
                 return render(request,'project.html',{'username':username,'project_name':project_name,'liste_dataset':liste_dataset,
                                                         'filename':filename,})
@@ -138,35 +138,49 @@ def creer_project(request):
     return redirect('liste_project')
 
 @login_required
-def process_dataset(request,project_name,filename):
-    methods,method_col=['drop','mode','median','mean'],{'drop': 'columns', 'mode': 'numerical_columns', 'mean': 'numerical_columns', 'median': 'numerical_columns'}
-    username=request.user.username
-    db, client = get_db_mongo('Auto_ML','localhost',27017)
-    fs = gridfs.GridFS(db)
-    grid_out = fs.find_one({"metadata.username": username, 'metadata.filename': filename,'metadata.project_name':project_name})
-    if grid_out:
+def process_dataset(request, project_name, filename, a):
+    methods, method_col = ['drop', 'mode', 'median', 'mean'], {'drop': 'columns', 'mode': 'numerical_columns', 'mean': 'numerical_columns', 'median': 'numerical_columns'}
+    username = request.user.username
+    db, client = get_db_mongo('Auto_ML', 'localhost', 27017)
+    if a == 0:
+        fs = gridfs.GridFS(db)
+        grid_out = fs.find_one({"metadata.username": username, 'metadata.filename': filename, 'metadata.project_name': project_name})
         file_data = BytesIO(grid_out.read())
-        df = pd.read_csv(file_data,sep=',',on_bad_lines='warn')
+        df = pd.read_csv(file_data, sep=',', on_bad_lines='warn')
+
+        # Sauvegarde du DataFrame dans la session sous forme sérialisée
+        request.session['df'] = df.to_dict()  # Convertit en dictionnaire
+
         categorical_columns, numerical_columns = type_column(df)
-        columns,dico_type,rows=afficher_df(df)
-        print(dico_type)
-        print(numerical_columns)
-        numerical_columns = [col.strip() for col in numerical_columns]
-        columns = [col.strip() for col in columns]
-        if request.method == 'POST':
-            action=request.POST.get('action_process',None)
-            if action=='action1':
-                col = request.POST.get('column', None)
-                method = request.POST.get('method', None)
-                print(col, method)
-                df=valeurs_manquantes(df,col,method)
-                columns,dico_type,rows=afficher_df(df)
-                print(columns)
-    else:
-        columns,df,dico_type,rows=None,None,None,None
-    return render(request, 'process_dataset.html', {'username':username,'project_name':project_name,'columns':columns,'methods':methods,
-                                                    'categorical_columns':categorical_columns,'numerical_columns':numerical_columns,'df':df,
-                                                    'dico_type':dico_type,'rows':rows,'filename':filename,'method_col':method_col})
+        columns, dico_type, rows = afficher_df(df)
+    elif a == 1:
+        # Récupère le DataFrame depuis la session
+        df_dict = request.session.get('df', None)
+        if df_dict is None:
+            raise ValueError("Le DataFrame n'est pas disponible dans la session.")
+        df = pd.DataFrame.from_dict(df_dict)
+
+        categorical_columns, numerical_columns = type_column(df)
+        columns, dico_type, rows = afficher_df(df)
+
+    if request.method == 'POST':
+        action = request.POST.get('action_process', None)
+        if action == 'action1':
+            col = request.POST.get('column', None)
+            method = request.POST.get('method', None)
+            text = request.POST.get('replace-text', None)
+
+            df = valeurs_manquantes(df, col, method, text)
+
+            # Mettez à jour le DataFrame dans la session
+            request.session['df'] = df.to_dict()
+
+            columns, dico_type, rows = afficher_df(df)
+
+    return render(request, 'process_dataset.html', {'username': username,'project_name': project_name,'columns': columns,'methods': methods,
+        'categorical_columns': categorical_columns,'numerical_columns': numerical_columns,'df': df,'dico_type': dico_type,'rows': rows,
+        'filename': filename,'method_col': method_col,'a': a})
+
 
 def read_csv(username, project_name, filename):
     db, client = get_db_mongo('Auto_ML','localhost',27017)
@@ -312,7 +326,7 @@ def delete_project(username,project_name):
         collection.delete_one({'_id':project_id})
         return {"success": True, "message": "Projet supprimé avec succès."}
 
-def valeurs_manquantes(df,col, missing_strategy):
+def valeurs_manquantes(df,col, missing_strategy,text=None):
     if missing_strategy == "mean":
         df[col].fillna(df[col].mean(), inplace=True)
     elif missing_strategy == "median":
@@ -321,4 +335,6 @@ def valeurs_manquantes(df,col, missing_strategy):
         df[col].fillna(df[col].mode()[0], inplace=True)
     elif missing_strategy == "drop":
         df.dropna(subset=[col], inplace=True)
+    elif missing_strategy == "replace":
+        df[col].fillna(text, inplace=True)
     return df

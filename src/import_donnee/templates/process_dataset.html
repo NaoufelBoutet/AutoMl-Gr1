@@ -31,11 +31,11 @@
         <main>
             <section>
                 <h2>Gestion des valeurs manquantes</h2>
-                <form method="post" action="{% url 'process_dataset' project_name=project_name filename=filename %}">
+                <form method="post" action="{% url 'process_dataset' project_name=project_name filename=filename a=a %}">
                     {% csrf_token %}
-                
+                    
                     <!-- Sélection de la colonne -->
-                    <label for="column-select">Choisissez une colonne :</label>
+                    <label for="column-select">Choisissez une colonne:</label>
                     <select id="column-select" name="column" required onchange="updateMethodOptions()">
                         <option value="" disabled selected>-- Sélectionnez une colonne --</option>
                         {% for column in columns %}
@@ -43,21 +43,26 @@
                         {% endfor %}
                     </select>
                 
-                    <!-- Sélection des méthodes -->
-                    <div id="method-select-container" style="display: none;">
-                        <label for="method-select">Choisissez une méthode :</label>
-                        <select id="method-select" name="method" required>
-                            <option value="" disabled selected>-- Sélectionnez une méthode --</option>
-                        </select>
+                    <!-- Sélection de la méthode -->
+                    <label for="method-select">Choisissez une méthode:</label>
+                    <select id="method-select" name="method" required onchange="toggleCustomMethod()">
+                        <option value="" disabled selected>-- Sélectionnez une méthode --</option>
+                        <!-- Les options seront générées dynamiquement en JavaScript -->
+                    </select>
+                
+                    <!-- Boîte de texte pour la méthode personnalisée -->
+                    <div id="replace-method-container" style="display: none;">
+                        <label for="replace-text">Remplacer</label>
+                        <input type="text" id="replace-text" name="replace-text" placeholder="Valeur de remplacement">
                     </div>
                 
                     <button type="submit" name="action_process" value="action1">Appliquer</button>
                 </form>
+                
             </section>
-            <p>Colonnes numériques : {{ numerical_columns }}</p>
             <section>
                 <h2>Encodage des variables catégoriques</h2>
-                <form method="post" action="{% url 'process_dataset' project_name=project_name filename=filename%}">
+                <form method="post" action="{% url 'process_dataset' project_name=project_name filename=filename a=a%}">
                     {% csrf_token %}
                     <p>Sélectionnez les colonnes catégoriques à encoder :</p>
                     <select name="categorical_columns" multiple>
@@ -116,7 +121,7 @@
             </section>
         </main>
         <script>
-            // Utilisation de escapejs pour éviter les entités HTML dans les colonnes
+            // Définir les colonnes numériques
             const numericalColumns = [
                 {% for column in numerical_columns %}
                     "{{ column|escapejs }}",  // Utiliser escapejs pour éviter les caractères spéciaux HTML
@@ -133,7 +138,8 @@
                 "drop": "columns",    // drop peut être appliqué à toutes les colonnes
                 "mode": "numerical_columns",
                 "median": "numerical_columns",
-                "mean": "numerical_columns"
+                "mean": "numerical_columns",
+                "replace": "columns"  // Méthode personnalisée applicable à toutes les colonnes
             };
         
             function updateMethodOptions() {
@@ -142,27 +148,25 @@
                 const methodSelect = document.getElementById("method-select");
         
                 // Récupérer la colonne sélectionnée et la nettoyer
-                const selectedColumn = columnSelect.value.trim();  // Nettoyer les espaces
-                console.log("Selected Column:", selectedColumn); // Debug log
+                const selectedColumn = columnSelect.value.trim();
         
                 if (selectedColumn) {
                     // Vérifier si la colonne sélectionnée est numérique
-                    const isNumerical = numericalColumns.includes(selectedColumn);  // Vérification simple avec includes
-                    console.log("Is Selected Column Numerical?:", isNumerical); // Debug log
-        
-                    // Récupérer les méthodes disponibles en fonction du type de colonne
-                    let availableMethods = [];
-        
-                    // Ajouter "drop" pour toutes les colonnes
-                    availableMethods.push("drop");
-        
-                    // Ajouter les méthodes pour les colonnes numériques
-                    if (isNumerical) {
-                        availableMethods.push("mean", "median", "mode"); // Ajoute les méthodes numériques
-                    }
+                    const isNumerical = numericalColumns.includes(selectedColumn);
         
                     // Réinitialiser la liste des méthodes
                     methodSelect.innerHTML = '<option value="" disabled selected>-- Sélectionnez une méthode --</option>';
+        
+                    // Ajouter "drop" pour toutes les colonnes
+                    const availableMethods = ["drop"];
+        
+                    // Ajouter les méthodes pour les colonnes numériques
+                    if (isNumerical) {
+                        availableMethods.push("mean", "median", "mode");
+                    }
+        
+                    // Ajouter la méthode personnalisée qui est applicable à toutes les colonnes
+                    availableMethods.push("replace");
         
                     // Ajouter les méthodes disponibles comme options
                     availableMethods.forEach(method => {
@@ -171,15 +175,22 @@
                         option.textContent = method;
                         methodSelect.appendChild(option);
                     });
+                }
+            }
         
-                    // Afficher la liste déroulante des méthodes
-                    methodSelectContainer.style.display = "block";
+            function toggleCustomMethod() {
+                const methodSelect = document.getElementById("method-select");
+                const customMethodContainer = document.getElementById("replace-method-container");
+        
+                // Si la méthode choisie est "custom", afficher la boîte de texte
+                if (methodSelect.value === "replace") {
+                    customMethodContainer.style.display = "block";
                 } else {
-                    // Si aucune colonne n'est sélectionnée, masquer la liste des méthodes
-                    methodSelectContainer.style.display = "none";
+                    customMethodContainer.style.display = "none";
                 }
             }
         </script>
+        
         
         
     </body>
