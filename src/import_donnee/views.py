@@ -58,7 +58,7 @@ def project(request,project_name):
         elif action=="action1" :
             fs = gridfs.GridFS(db)
             grid_out = fs.find_one({"metadata.username": username, 'metadata.filename': filename,'metadata.project_name':project_name})
-            if grid_out:
+            if grid_out: 
                 return redirect('process_dataset',project_name,filename)
             else:
                 return render(request,'project.html',{'username':username,'project_name':project_name,'liste_dataset':liste_dataset,
@@ -139,7 +139,7 @@ def creer_project(request):
 
 @login_required
 def process_dataset(request,project_name,filename):
-    methods=['drop','mode','median','mean']
+    methods,method_col=['drop','mode','median','mean'],{'drop': 'columns', 'mode': 'numerical_columns', 'mean': 'numerical_columns', 'median': 'numerical_columns'}
     username=request.user.username
     db, client = get_db_mongo('Auto_ML','localhost',27017)
     fs = gridfs.GridFS(db)
@@ -149,6 +149,10 @@ def process_dataset(request,project_name,filename):
         df = pd.read_csv(file_data,sep=',',on_bad_lines='warn')
         categorical_columns, numerical_columns = type_column(df)
         columns,dico_type,rows=afficher_df(df)
+        print(dico_type)
+        print(numerical_columns)
+        numerical_columns = [col.strip() for col in numerical_columns]
+        columns = [col.strip() for col in columns]
         if request.method == 'POST':
             action=request.POST.get('action_process',None)
             if action=='action1':
@@ -162,7 +166,7 @@ def process_dataset(request,project_name,filename):
         columns,df,dico_type,rows=None,None,None,None
     return render(request, 'process_dataset.html', {'username':username,'project_name':project_name,'columns':columns,'methods':methods,
                                                     'categorical_columns':categorical_columns,'numerical_columns':numerical_columns,'df':df,
-                                                    'dico_type':dico_type,'rows':rows,'filename':filename})
+                                                    'dico_type':dico_type,'rows':rows,'filename':filename,'method_col':method_col})
 
 def read_csv(username, project_name, filename):
     db, client = get_db_mongo('Auto_ML','localhost',27017)

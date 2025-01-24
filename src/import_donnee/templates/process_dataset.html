@@ -11,6 +11,9 @@
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet">
         
+        <link rel="stylesheet" href="https://cdn.datatables.net/1.10.21/css/jquery.dataTables.min.css">
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
     </head>
     <body>
         <nav class="nav_black">
@@ -28,26 +31,30 @@
         <main>
             <section>
                 <h2>Gestion des valeurs manquantes</h2>
-                <form method="post" action="{% url 'process_dataset' project_name=project_name filename=filename%}">
+                <form method="post" action="{% url 'process_dataset' project_name=project_name filename=filename %}">
                     {% csrf_token %}
-                    <label for="column-select">Choisissez une colonne:</label>
-                    <select id="column-select" name="column" required>
+                
+                    <!-- Sélection de la colonne -->
+                    <label for="column-select">Choisissez une colonne :</label>
+                    <select id="column-select" name="column" required onchange="updateMethodOptions()">
                         <option value="" disabled selected>-- Sélectionnez une colonne --</option>
                         {% for column in columns %}
                             <option value="{{ column }}">{{ column }}</option>
                         {% endfor %}
                     </select>
-                    <label for="method-select">Choisissez une methode:</label>
-                    <select id="method-select" name="method" required>
-                        <option value="" disabled selected>-- Sélectionnez une methode --</option>
-                        {% for method in methods %}
-                            <option value="{{ method }}">{{ method }}</option>
-                        {% endfor %}
-                    </select>
+                
+                    <!-- Sélection des méthodes -->
+                    <div id="method-select-container" style="display: none;">
+                        <label for="method-select">Choisissez une méthode :</label>
+                        <select id="method-select" name="method" required>
+                            <option value="" disabled selected>-- Sélectionnez une méthode --</option>
+                        </select>
+                    </div>
+                
                     <button type="submit" name="action_process" value="action1">Appliquer</button>
                 </form>
             </section>
-    
+            <p>Colonnes numériques : {{ numerical_columns }}</p>
             <section>
                 <h2>Encodage des variables catégoriques</h2>
                 <form method="post" action="{% url 'process_dataset' project_name=project_name filename=filename%}">
@@ -108,5 +115,67 @@
             {% endif %}
             </section>
         </main>
+        <script>
+        const numericalColumns = [
+            {% for column in numerical_columns %}
+                "{{ column }}",
+            {% endfor %}
+        ];
+
+        const allColumns = [
+            {% for column in columns %}
+                "{{ column }}",
+            {% endfor %}
+        ];
+
+        const methodCol = {
+            "drop": "columns",
+            "mode": "numerical_columns",
+            "median": "numerical_columns",
+            "mean": "numerical_columns"
+        };
+
+        function updateMethodOptions() {
+    const columnSelect = document.getElementById("column-select");
+    const methodSelectContainer = document.getElementById("method-select-container");
+    const methodSelect = document.getElementById("method-select");
+
+            // Récupérer la colonne sélectionnée et la nettoyer
+            const selectedColumn = columnSelect.value.trim();  // Nettoyer les espaces
+            console.log("Selected Column:", selectedColumn); // Debug log
+
+            if (selectedColumn) {
+                // Vérifier si la colonne sélectionnée est numérique
+                const isNumerical = numericalColumns.map(col => col.trim()).includes(selectedColumn);  // Nettoyer les colonnes numériques
+                console.log("Is Selected Column Numerical?:", isNumerical); // Debug log
+
+                // Récupérer les méthodes disponibles en fonction du type de colonne
+                let availableMethods = [];
+                for (const [method, colType] of Object.entries(methodCol)) {
+                    if ((colType === "numerical_columns" && isNumerical) || (colType === "columns" && !isNumerical)) {
+                        availableMethods.push(method);
+                    }
+                }
+                console.log("Available Methods:", availableMethods); // Debug log
+
+                // Réinitialiser la liste des méthodes
+                methodSelect.innerHTML = '<option value="" disabled selected>-- Sélectionnez une méthode --</option>';
+
+                // Ajouter les méthodes disponibles comme options
+                availableMethods.forEach(method => {
+                    const option = document.createElement("option");
+                    option.value = method;
+                    option.textContent = method;
+                    methodSelect.appendChild(option);
+                });
+
+                // Afficher la liste déroulante des méthodes
+                methodSelectContainer.style.display = "block";
+            } else {
+                // Si aucune colonne n'est sélectionnée, masquer la liste des méthodes
+                methodSelectContainer.style.display = "none";
+            }
+        }
+    </script>
     </body>
 </html>
