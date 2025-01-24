@@ -30,6 +30,16 @@
         </nav>
         <main>
             <section>
+                <h1>Suppression des doublons</h1>
+                {%if dico_info%}
+                    <p>Le df contient {{dico_info.nb_colonne_double}} ligne dupliqué</p>
+                {%endif%}
+                <form method="post" action="{% url 'process_dataset' project_name=project_name filename=filename a=a%}">
+                    {% csrf_token %}
+                    <button type="submit" name="action_process" value="action2">Suppression des doublons</button>
+                </form>
+            </section>
+            <section>
                 <h2>Gestion des valeurs manquantes</h2>
                 <form method="post" action="{% url 'process_dataset' project_name=project_name filename=filename a=a %}">
                     {% csrf_token %}
@@ -60,6 +70,29 @@
                 </form>
                 
             </section>
+            <section>
+            <h2>remplacer une valeur dans une colonne</h2>
+            <form method="post" action="{% url 'process_dataset' project_name=project_name filename=filename a=a%}">
+                {% csrf_token %}
+                <label for="column-select">Choisissez une colonne:</label>
+                    <select id="column-select" name="column" required>
+                        <option value="" disabled selected >-- Sélectionnez une colonne --</option>
+                        {% for column in columns %}
+                            <option value="{{ column }}">{{ column }}</option>
+                        {% endfor %}
+                    </select>
+                <label for="text-to-replace">Remplacer par...</label>
+                    <input type="text" id="text-to-replace" name="text-to-replace" placeholder="Valeur a remplacer">
+                <label for="replace-text2">Remplacer par...</label>
+                    <input type="text" id="replace-text2" name="replace-text2" placeholder="Valeur de remplacement">
+                <button type="submit" name="action_process" value="action3">Appliquer</button>
+            </form>
+            {%if message%}
+                <p> {{message}}</p>
+            {%endif%}
+            </section>
+
+
             <section>
                 <h2>Encodage des variables catégoriques</h2>
                 <form method="post" action="{% url 'process_dataset' project_name=project_name filename=filename a=a%}">

@@ -48,8 +48,8 @@ def project(request,project_name):
             if not filename:
                 filename,columns,dico_info,table_html,df,dico_type,rows,columns=None,None,None,None,None,None,None,None
             else:
-                dico_info=read_csv(username,project_name,filename)
                 table_html,df=df_to_html(username,filename,project_name)      
+                dico_info=info_df(df)
                 dico_type=colonne_type(df)
                 rows = df.to_dict(orient='records')
                 columns=df.columns
@@ -140,7 +140,7 @@ def creer_project(request):
 
 @login_required
 def process_dataset(request, project_name, filename, a):
-    methods, method_col = ['drop', 'mode', 'median', 'mean'], {'drop': 'columns', 'mode': 'numerical_columns', 'mean': 'numerical_columns', 'median': 'numerical_columns'}
+    methods, method_col, msg= ['drop', 'mode', 'median', 'mean'], {'drop': 'columns', 'mode': 'numerical_columns', 'mean': 'numerical_columns', 'median': 'numerical_columns'},None
     username = request.user.username
     db, client = get_db_mongo('Auto_ML', 'localhost', 27017)
     if a == 0:
@@ -163,39 +163,34 @@ def process_dataset(request, project_name, filename, a):
 
         categorical_columns, numerical_columns = type_column(df)
         columns, dico_type, rows = afficher_df(df)
-
     if request.method == 'POST':
         action = request.POST.get('action_process', None)
         if action == 'action1':
-            col = request.POST.get('column', None)
-            method = request.POST.get('method', None)
-            text = request.POST.get('replace-text', None)
-
+            col,method, text = request.POST.get('column', None), request.POST.get('method', None), request.POST.get('replace-text', None)
             df = valeurs_manquantes(df, col, method, text)
-
-            # Mettez à jour le DataFrame dans la session
-            request.session['df'] = df.to_dict()
-
-            columns, dico_type, rows = afficher_df(df)
+        if action == 'action2':
+            df = df.drop_duplicates()
+        if action == 'action3':
+            col, old_value, new_value = request.POST.get('column', None), request.POST.get('text-to-replace', None), request.POST.get('replace-text2', None)
+            print(col,old_value)
+            df,msg = replace(df,col,old_value,new_value)
+        # Mettez à jour le DataFrame dans la session
+        request.session['df'] = df.to_dict()
+        columns, dico_type, rows = afficher_df(df)
     a=1
+    dico_info=info_df(df)
     return render(request, 'process_dataset.html', {'username': username,'project_name': project_name,'columns': columns,'methods': methods,
         'categorical_columns': categorical_columns,'numerical_columns': numerical_columns,'df': df,'dico_type': dico_type,'rows': rows,
-        'filename': filename,'method_col': method_col,'a': a})
+        'filename': filename,'method_col': method_col,'a': a,"dico_info":dico_info,"message":msg})
 
 
-def read_csv(username, project_name, filename):
-    db, client = get_db_mongo('Auto_ML','localhost',27017)
-    fs = gridfs.GridFS(db)
-    grid_out = fs.find_one({"metadata.username": username, 'metadata.filename': filename,'metadata.project_name':project_name})
-    if grid_out:
-        file_data = BytesIO(grid_out.read())
-        df = pd.read_csv(file_data,sep=',',on_bad_lines='warn')
-        ligne = df.shape[0]
-        colonne = df.shape[1]
-        nb_nul = df.isnull().sum().to_frame().to_html()
-        nb_colonne_double = df.duplicated().sum()
-        return {'username':username,'ligne':ligne,'colonne':colonne,
-                'nb_nul':nb_nul,'nb_colonne_double':nb_colonne_double}
+def info_df(df):
+    ligne = df.shape[0]
+    colonne = df.shape[1]
+    nb_nul = df.isnull().sum().to_frame().to_html()
+    nb_colonne_double = df.duplicated().sum()
+    return {'ligne':ligne,'colonne':colonne,
+            'nb_nul':nb_nul,'nb_colonne_double':nb_colonne_double}
 
 def df_to_html(username,filename,project_name):
     db, client = get_db_mongo('Auto_ML','localhost',27017)
@@ -239,7 +234,7 @@ def magic_clean(df):
     for col in df.select_dtypes(include=['object']).columns:
         df[col] = df[col].astype(str).str.replace(r'[\s\x00-\x1F\x7F-\x9F]+', '', regex=True)
         df[col] = pd.to_numeric(df[col], errors='ignore')
-        df[col] = df[col].str.replace(',', '.', regex=False)
+        df[col] = df[col].astype(str).str.replace(',', '.', regex=False)
         try :
             converted = pd.to_numeric(df[col], errors='raise')
             if converted.notna().all():
@@ -340,3 +335,33 @@ def valeurs_manquantes(df,col, missing_strategy,text=None):
     elif missing_strategy == "replace":
         df[col].fillna(text, inplace=True)
     return df
+
+def replace(df, col, old_value, new_value):
+    # Vérifie si la colonne existe dans le DataFrame
+    magic_clean(df)
+    col_type = df[col].dtype
+
+        # Conversion des types des valeurs d'entrée pour correspondre à la colonne
+    try:
+        if pd.api.types.is_numeric_dtype(col_type):
+            old_value = float(old_value) if '.' in str(old_value) else int(old_value)
+            new_value = float(new_value) if '.' in str(new_value) else int(new_value)
+        elif pd.api.types.is_datetime64_any_dtype(col_type):
+            old_value = pd.to_datetime(old_value)
+            new_value = pd.to_datetime(new_value)
+        elif pd.api.types.is_bool_dtype(col_type):
+            old_value = bool(old_value)
+            new_value = bool(new_value)
+        else:
+            old_value = str(old_value)
+            new_value = str(new_value)
+    except (ValueError, TypeError):
+        return df, f"Impossible de convertir les valeurs '{old_value}' et '{new_value}' pour correspondre au type '{col_type}'."
+
+    # Vérifie si la valeur à remplacer existe dans la colonne
+    if old_value not in df[col].values:
+        return df, f"La valeur '{old_value}' n'est pas présente dans la colonne '{col}'."
+
+    # Effectue le remplacement
+    df[col] = df[col].replace(old_value, new_value)
+    return df, f"Remplacement de '{old_value}' par '{new_value}' effectué avec succès dans la colonne '{col}'."
