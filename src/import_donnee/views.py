@@ -12,6 +12,7 @@ import re
 import numpy as np
 from sklearn.preprocessing import StandardScaler, OneHotEncoder, LabelEncoder,MinMaxScaler,RobustScaler
 from sklearn.model_selection import train_test_split
+import matplotlib.pyplot as plt
 
 @login_required
 def home_data(request):
@@ -63,7 +64,7 @@ def project(request,project_name):
             fs = gridfs.GridFS(db)
             grid_out = fs.find_one({"metadata.username": username, 'metadata.filename': filename,'metadata.project_name':project_name})
             if grid_out: 
-                return redirect('process_dataset',project_name,filename,0)
+                return redirect('process_dataset',project_name,filename)
             else:
                 return render(request,'project.html',{'username':username,'project_name':project_name,'liste_dataset':liste_dataset,
                                                         'filename':filename,})
@@ -150,30 +151,27 @@ def creer_project(request):
     return redirect('liste_project')
 
 @login_required
-def process_dataset(request, project_name, filename, a):
+def process_dataset(request, project_name, filename):
     methods, method_col, msg, liste_encod_cat,liste_encod_num= ['drop', 'mode', 'median', 'mean'], {'drop': 'columns', 'mode': 'numerical_columns', 'mean': 'numerical_columns', 'median': 'numerical_columns'},None,['One Hot','Label'],['Standard','Min-Max','Robust']
     username = request.user.username
     db, client = get_db_mongo('Auto_ML', 'localhost', 27017)
-    if a == 0:
-        fs = gridfs.GridFS(db)
-        grid_out = fs.find_one({"metadata.username": username, 'metadata.filename': filename, 'metadata.project_name': project_name})
-        file_data = BytesIO(grid_out.read())
-        df = pd.read_csv(file_data, sep=',', on_bad_lines='warn')
-
-        # Sauvegarde du DataFrame dans la session sous forme sérialisée
-        request.session['df'] = df.to_dict()  # Convertit en dictionnaire
-
-        categorical_columns, numerical_columns = type_column(df)
-        columns, dico_type, rows = afficher_df(df)
-    elif a == 1:
-        # Récupère le DataFrame depuis la session
-        df_dict = request.session.get('df', None)
-        if df_dict is None:
-            raise ValueError("Le DataFrame n'est pas disponible dans la session.")
-        df = pd.DataFrame.from_dict(df_dict)
-
-        categorical_columns, numerical_columns = type_column(df)
-        columns, dico_type, rows = afficher_df(df)
+    df_dict = request.session.get('df', None) 
+    if df_dict is None:
+        # Si le DataFrame n'est pas dans la session, le charger depuis GridFS
+        fs = gridfs.GridFS(db)  # Assurez-vous que 'settings.DB' pointe vers votre base de données MongoDB
+        grid_out = fs.find_one({"metadata.username": username, 'metadata.filename': filename, 'metadata.project_name': project_name}) 
+        if grid_out:
+            file_data = BytesIO(grid_out.read())
+            df = pd.read_csv(file_data, sep=',', on_bad_lines='warn')
+            request.session['df'] = df.to_dict()  # Convertit en dictionnaire   
+        else:
+            # Gestion du cas où le fichier n'est pas trouvé
+            return "Fichier non trouvé dans GridFS"
+    else:
+        # Si le DataFrame est déjà dans la session, le reconstruire à partir du dictionnaire
+        df = pd.DataFrame.from_dict(df_dict)  
+    categorical_columns, numerical_columns = type_column(df)
+    columns, dico_type, rows = afficher_df(df)
     if request.method == 'POST':
         action = request.POST.get('action_process', None)
         if action == 'action1':
@@ -205,9 +203,20 @@ def process_dataset(request, project_name, filename, a):
 
 @login_required
 def viz_data(request, project_name, filename):
+    method = ['Boxplot','Histogramme']
     username = request.user.username
     db, client = get_db_mongo('Auto_ML', 'localhost', 27017)
-    return render(request,'viz_data.html',{'username': username,'project_name': project_name,'filename': filename})
+    fs = gridfs.GridFS(db)
+    grid_out = fs.find_one({"metadata.username": username, 'metadata.filename': filename, 'metadata.project_name': project_name})
+    file_data = BytesIO(grid_out.read())
+    df = pd.read_csv(file_data, sep=',', on_bad_lines='warn')
+    categorical_columns, numerical_columns = type_column(df)   
+    if request.method == 'POST':
+        action = request.POST.get('action_process', None)
+        if action=='action1':
+            col, method = request.POST.getlist('columns', None),request.POST.get('method', None)
+    return render(request,'viz_data.html',{'username': username,'project_name': project_name,'filename': filename,'method':method,
+                                           'numerical_columns':numerical_columns})
 
 def info_df(df):
     ligne = df.shape[0]
@@ -434,3 +443,27 @@ def encode_numerical(df,col,encoding_method):
     else :
         return df, "Colonne n'existe pas"
     return df ,'tout est bon'
+
+def boxplot(df):
+    fig, ax = plt.subplots(figsize=(10, 7))
+    ax.boxplot(df.values, tick_labels=df.columns,vert=True)
+    ax.set_xlabel("Valeurs")
+    ax.set_ylabel("Colonnes")
+    plt.grid()
+    return fig
+
+def histplot(df):
+    fig, ax = plt.subplots(figsize=(10, 7))
+    ax.hist(df.values, bins=5)
+    ax.set_xlabel("Valeurs")
+    ax.set_ylabel("Colonnes")
+    plt.grid()
+    return fig
+
+def plot_1D(df,col,method):
+    df = df[col]
+    if method=='Boxplot':
+        fig = boxplot(df)
+    if method == 'Histogramme':
+        fig = boxplot(df)
+    return fig

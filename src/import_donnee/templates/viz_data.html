@@ -10,7 +10,9 @@
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet">
 
-        <link rel="stylesheet" href="https://cdn.datatables.net/1.10.21/css/jquery.dataTables.min.css">
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+        <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     </head>
     <body>
         <nav class="nav_black">
@@ -30,4 +32,33 @@
                 </div>
             </a>
         </nav>
+        <section>
+            <h1>Choisissez les colonnes à encoder (Catégoriques)</h1>
+            <form method="post" action="{% url 'viz_data' project_name=project_name filename=filename %}">
+                {% csrf_token %}
+                <label for="columns">Colonnes disponibles :</label>
+                <select class="select_mult" id="columns" name="columns" multiple="multiple" style="width: 100%;">
+                    {% for col in numerical_columns %}
+                        <option value="{{ col }}">{{ col }}</option>
+                    {% endfor %}
+                </select>
+
+                <h3>Méthode d'encodage :</h3>
+                {% for value in methods %}
+                    <label>
+                        <input type="radio" name="method" value="{{ value }}">
+                        {{ value }}
+                    </label><br>
+                {% endfor %}
+                <button type="submit" name="action_process" value="action1">Valider</button>
+            </form>
+        </section>
+        <script>
+        $(document).ready(function() {
+            $('.select_mult').select2({
+                placeholder: "Sélectionnez des colonnes",
+                allowClear: true
+            });
+        });
+        </script>
     </body>
