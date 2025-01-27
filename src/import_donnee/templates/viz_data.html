@@ -38,6 +38,7 @@
                 {% csrf_token %}
                 <label for="columns">Colonnes disponibles :</label>
                 <select class="select_mult" id="columns" name="columns" multiple="multiple" style="width: 100%;">
+                    <option value="all" selected>all</option>
                     {% for col in numerical_columns %}
                         <option value="{{ col }}">{{ col }}</option>
                     {% endfor %}
@@ -52,7 +53,32 @@
                 {% endfor %}
                 <button type="submit" name="action_process" value="action1">Valider</button>
             </form>
+            <div>
+                {%if message%}
+                    {{message}}
+                {%endif%}
+            </div>
         </section>
+        <section>
+            {% for fig in figs %}
+                <br>
+                    <div>
+                        <form method="post" action="{% url 'viz_data' project_name=project_name filename=filename %}">
+                            <!-- CSRF token obligatoire -->
+                            {% csrf_token %}
+                            
+                            <img src="data:image/png;base64,{{ fig }}" alt="Graphique" />
+                            
+                            <!-- Champ caché pour transmettre la figure -->
+                            <input type="hidden" name="fig_data" value="{{ forloop.counter0 }}" />
+                            
+                            <button type="submit" name="action_process" value="save">Sauvegarder le graphique</button>
+                            <button type="submit" name="action_process" value="del">Supprimer le graphique</button>
+                        </form>
+                    </div>
+            {% endfor %}
+        </section>
+
         <script>
         $(document).ready(function() {
             $('.select_mult').select2({

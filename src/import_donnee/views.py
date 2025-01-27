@@ -13,6 +13,10 @@ import numpy as np
 from sklearn.preprocessing import StandardScaler, OneHotEncoder, LabelEncoder,MinMaxScaler,RobustScaler
 from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
+import base64
+import io
+import matplotlib
+matplotlib.use('Agg')
 
 @login_required
 def home_data(request):
@@ -203,20 +207,36 @@ def process_dataset(request, project_name, filename):
 
 @login_required
 def viz_data(request, project_name, filename):
-    method = ['Boxplot','Histogramme']
+    methods, message= ['Boxplot','Histogramme'], None 
     username = request.user.username
     db, client = get_db_mongo('Auto_ML', 'localhost', 27017)
     fs = gridfs.GridFS(db)
     grid_out = fs.find_one({"metadata.username": username, 'metadata.filename': filename, 'metadata.project_name': project_name})
     file_data = BytesIO(grid_out.read())
     df = pd.read_csv(file_data, sep=',', on_bad_lines='warn')
-    categorical_columns, numerical_columns = type_column(df)   
+    categorical_columns, numerical_columns = type_column(df)
+    figs = request.session.get('figs', None) 
+    if figs is None:
+        figs=[]   
     if request.method == 'POST':
         action = request.POST.get('action_process', None)
         if action=='action1':
             col, method = request.POST.getlist('columns', None),request.POST.get('method', None)
-    return render(request,'viz_data.html',{'username': username,'project_name': project_name,'filename': filename,'method':method,
-                                           'numerical_columns':numerical_columns})
+            if col==['all']:
+                col=numerical_columns
+            if col==[]:
+                message = "selectionner une colonne"
+            elif method!=None:
+                figs.append(plot_1D(df,col,method))
+        if action == 'save':
+            pass
+        if action =='del':
+            fig_del = request.POST.get('fig_data',None)
+            figs.pop(int(fig_del))
+        request.session['figs'] = figs
+        print(figs)
+    return render(request,'viz_data.html',{'username': username,'project_name': project_name,'filename': filename,'methods':methods,
+                                           'numerical_columns':numerical_columns, 'figs':figs, 'message':message})
 
 def info_df(df):
     ligne = df.shape[0]
@@ -445,25 +465,50 @@ def encode_numerical(df,col,encoding_method):
     return df ,'tout est bon'
 
 def boxplot(df):
+    # Créer le boxplot
     fig, ax = plt.subplots(figsize=(10, 7))
-    ax.boxplot(df.values, tick_labels=df.columns,vert=True)
+    ax.boxplot(df.values, tick_labels=df.columns, vert=True)
     ax.set_xlabel("Valeurs")
     ax.set_ylabel("Colonnes")
     plt.grid()
-    return fig
+
+    img = io.BytesIO()
+    plt.savefig(img, format='png')
+    img.seek(0)  # Revenir au début du fichier binaire
+
+    img_base64 = base64.b64encode(img.getvalue()).decode('utf-8')
+
+    # Fermer le graphique pour libérer de la mémoire
+    plt.close()
+
+    return img_base64
 
 def histplot(df):
+    # Créer l'histogramme
     fig, ax = plt.subplots(figsize=(10, 7))
     ax.hist(df.values, bins=5)
     ax.set_xlabel("Valeurs")
     ax.set_ylabel("Colonnes")
     plt.grid()
-    return fig
+    # Sauvegarder l'image dans un buffer mémoire
+    img = io.BytesIO()
+    plt.savefig(img, format='png')
+    img.seek(0)  # Revenir au début du fichier binaire
+    # Convertir l'image en base64 pour l'afficher dans le HTML
+    img_base64 = base64.b64encode(img.getvalue()).decode('utf-8')
+    # Fermer le graphique pour libérer de la mémoire
+    plt.close()
 
-def plot_1D(df,col,method):
-    df = df[col]
-    if method=='Boxplot':
-        fig = boxplot(df)
-    if method == 'Histogramme':
-        fig = boxplot(df)
-    return fig
+    return img_base64
+
+def plot_1D(df, col, method):
+    df = df[col] 
+    if method == 'Boxplot':
+        img_base64 = boxplot(df)
+    elif method == 'Histogramme':
+        img_base64 = histplot(df)
+    else:
+        img_base64 = None  
+    return img_base64
+
+
