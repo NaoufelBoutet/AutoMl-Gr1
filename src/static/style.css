@@ -175,3 +175,55 @@
 .card:hover > .card-header.header-img > img {
 	filter: brightness(0.9);
 }
+
+/* Style de la boîte déroulante */
+.dropdown {
+    position: relative;
+    display: inline-block;
+    width: 300px;
+}
+
+.dropdown-toggle {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    cursor: pointer;
+    background-color: #f9f9f9;
+}
+
+.dropdown-menu {
+    display: none;
+    position: absolute;
+    z-index: 1000;
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    max-height: 200px;
+    overflow-y: auto;
+    width: 100%;
+}
+
+.dropdown-menu.open {
+    display: block;
+}
+
+.dropdown-item {
+    padding: 8px 10px;
+    cursor: pointer;
+}
+
+.dropdown-item:hover {
+    background-color: #f1f1f1;
+}
+
+.dropdown-item input {
+    margin-right: 10px;
+}
+
+.dropdown-selected {
+    display: block;
+    margin-top: 5px;
+    color: #555;
+}

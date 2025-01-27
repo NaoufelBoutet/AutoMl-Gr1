@@ -14,6 +14,12 @@
         <link rel="stylesheet" href="https://cdn.datatables.net/1.10.21/css/jquery.dataTables.min.css">
         <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
         <script src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
+
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+        <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
+
     </head>
     <body>
         <nav class="nav_black">
@@ -81,7 +87,7 @@
                             <option value="{{ column }}">{{ column }}</option>
                         {% endfor %}
                     </select>
-                <label for="text-to-replace">Remplacer par...</label>
+                <label for="text-to-replace">Remplace</label>
                     <input type="text" id="text-to-replace" name="text-to-replace" placeholder="Valeur a remplacer">
                 <label for="replace-text2">Remplacer par...</label>
                     <input type="text" id="replace-text2" name="replace-text2" placeholder="Valeur de remplacement">
@@ -94,35 +100,54 @@
 
 
             <section>
-                <h2>Encodage des variables catégoriques</h2>
-                <form method="post" action="{% url 'process_dataset' project_name=project_name filename=filename a=a%}">
-                    {% csrf_token %}
-                    <p>Sélectionnez les colonnes catégoriques à encoder :</p>
-                    <select name="categorical_columns" multiple>
-                        {% for column in categorical_columns %}
-                            <option value="{{ column }}">{{ column }}</option>
+                <h1>Choisissez les colonnes à encoder</h1>
+                    <form method="post" action="{% url 'process_dataset' project_name=project_name filename=filename a=a%}">
+                        {% csrf_token %}
+
+                        <!-- Sélection multiple avec recherche -->
+                        <label for="columns">Colonnes disponibles :</label>
+                        <select id="columns" name="columns" multiple="multiple" style="width: 100%;">
+                            {% for col in categorical_columns %}
+                                <option value="{{ col}}">{{ col }}</option>
+                            {% endfor %}
+                        </select>
+
+                        <!-- Méthode d'encodage -->
+                        <h3>Méthode d'encodage :</h3>
+                        {% for value in encoding_methods_cat %}
+                            <label>
+                                <input type="radio" name="encoding_method" value="{{ value }}">
+                                {{ value }}
+                            </label><br>
                         {% endfor %}
-                    </select>
-                    <label><input type="radio" name="encoding_method" value="one_hot"> One-hot encoding</label><br>
-                    <label><input type="radio" name="encoding_method" value="label_encoding"> Label encoding</label><br>
-                    <button type="submit">Appliquer</button>
-                </form>
+                        <button type="submit" name="action_process" value="action4">Valider</button>
+                    </form>
+                                
+                
             </section>
     
             <section>
-                <h2>Normalisation et standardisation</h2>
-                <form method="post" action="{% url 'project' project_name=project_name %}">
-                    {% csrf_token %}
-                    <p>Choisissez les colonnes à normaliser ou standardiser :</p>
-                    <select name="scaling_columns" multiple>
-                        {% for column in numerical_columns %}
-                            <option value="{{ column }}">{{ column }}</option>
+                <h1>Choisissez les colonnes à encoder</h1>
+                    <form method="post" action="{% url 'process_dataset' project_name=project_name filename=filename a=a%}">
+                        {% csrf_token %}
+
+                        <!-- Sélection multiple avec recherche -->
+                        <label for="columns">Colonnes disponibles :</label>
+                        <select id="columns" name="columns" multiple="multiple" style="width: 100%;">
+                            {% for col in numerical_columns %}
+                                <option value="{{ col}}">{{ col }}</option>
+                            {% endfor %}
+                        </select>
+                        <!-- Méthode d'encodage -->
+                        <h3>Méthode d'encodage :</h3>
+                        {% for value in encoding_methods_num %}
+                            <label>
+                                <input type="radio" name="encoding_method" value="{{ value }}">
+                                {{ value }}
+                            </label><br>
                         {% endfor %}
-                    </select>
-                    <label><input type="radio" name="scaling_method" value="normalization"> Normalisation</label><br>
-                    <label><input type="radio" name="scaling_method" value="standardization"> Standardisation</label><br>
-                    <button type="submit">Appliquer</button>
-                </form>
+                        <button type="submit" name="action_process" value="action5">Valider</button>
+                    </form>
             </section>
     
             <section>
@@ -222,6 +247,13 @@
                     customMethodContainer.style.display = "none";
                 }
             }
+            $(document).ready(function() {
+                $('#columns').select2({
+                    placeholder: "Sélectionnez des colonnes",
+                    allowClear: true,
+                });
+            });
+        
         </script>
         
         

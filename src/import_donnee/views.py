@@ -9,6 +9,9 @@ import pandas as pd
 from io import BytesIO
 from django.contrib.auth.decorators import login_required
 import re
+import numpy as np
+from sklearn.preprocessing import StandardScaler, OneHotEncoder, LabelEncoder,MinMaxScaler
+from sklearn.model_selection import train_test_split
 
 @login_required
 def home_data(request):
@@ -72,7 +75,7 @@ def project(request,project_name):
                 df = pd.read_csv(file_data,sep=',',on_bad_lines='warn')
                 df = magic_clean(df)
                 save_dataset(filename,project_name,username,df)
-                dico_info=read_csv(username,project_name,filename)
+                dico_info=info_df(df)
                 table_html,df=df_to_html(username,filename,project_name)      
                 dico_type=colonne_type(df)
                 rows = df.to_dict(orient='records')
@@ -140,7 +143,7 @@ def creer_project(request):
 
 @login_required
 def process_dataset(request, project_name, filename, a):
-    methods, method_col, msg= ['drop', 'mode', 'median', 'mean'], {'drop': 'columns', 'mode': 'numerical_columns', 'mean': 'numerical_columns', 'median': 'numerical_columns'},None
+    methods, method_col, msg, liste_encod_cat,liste_encod_num= ['drop', 'mode', 'median', 'mean'], {'drop': 'columns', 'mode': 'numerical_columns', 'mean': 'numerical_columns', 'median': 'numerical_columns'},None,['One Hot','Label'],['Standard','Min-Max']
     username = request.user.username
     db, client = get_db_mongo('Auto_ML', 'localhost', 27017)
     if a == 0:
@@ -172,8 +175,16 @@ def process_dataset(request, project_name, filename, a):
             df = df.drop_duplicates()
         if action == 'action3':
             col, old_value, new_value = request.POST.get('column', None), request.POST.get('text-to-replace', None), request.POST.get('replace-text2', None)
-            print(col,old_value)
             df,msg = replace(df,col,old_value,new_value)
+        if action == 'action4':
+            col,encoding_method = request.POST.getlist('columns', None), request.POST.get('encoding_method', None)
+            print(col, encoding_method)
+            df, message = encode_categorical(df, col, encoding_method)
+        if action == 'action5':
+            col,encoding_method = request.POST.getlist('columns', None), request.POST.get('encoding_method', None)
+            print(col, encoding_method)
+            df,message=encode_numerical(df,col,encoding_method)
+
         # Mettez à jour le DataFrame dans la session
         request.session['df'] = df.to_dict()
         columns, dico_type, rows = afficher_df(df)
@@ -181,7 +192,8 @@ def process_dataset(request, project_name, filename, a):
     dico_info=info_df(df)
     return render(request, 'process_dataset.html', {'username': username,'project_name': project_name,'columns': columns,'methods': methods,
         'categorical_columns': categorical_columns,'numerical_columns': numerical_columns,'df': df,'dico_type': dico_type,'rows': rows,
-        'filename': filename,'method_col': method_col,'a': a,"dico_info":dico_info,"message":msg})
+        'filename': filename,'method_col': method_col,'a': a,"dico_info":dico_info,"message":msg,'encoding_methods_cat':liste_encod_cat,
+        'encoding_methods_num':liste_encod_num})
 
 
 def info_df(df):
@@ -337,31 +349,72 @@ def valeurs_manquantes(df,col, missing_strategy,text=None):
     return df
 
 def replace(df, col, old_value, new_value):
-    # Vérifie si la colonne existe dans le DataFrame
     magic_clean(df)
     col_type = df[col].dtype
-
-        # Conversion des types des valeurs d'entrée pour correspondre à la colonne
     try:
         if pd.api.types.is_numeric_dtype(col_type):
             old_value = float(old_value) if '.' in str(old_value) else int(old_value)
-            new_value = float(new_value) if '.' in str(new_value) else int(new_value)
         elif pd.api.types.is_datetime64_any_dtype(col_type):
             old_value = pd.to_datetime(old_value)
-            new_value = pd.to_datetime(new_value)
         elif pd.api.types.is_bool_dtype(col_type):
             old_value = bool(old_value)
-            new_value = bool(new_value)
         else:
             old_value = str(old_value)
-            new_value = str(new_value)
     except (ValueError, TypeError):
-        return df, f"Impossible de convertir les valeurs '{old_value}' et '{new_value}' pour correspondre au type '{col_type}'."
-
+        message = f"Impossible de convertir les valeurs '{old_value}' et '{new_value}' pour correspondre au type '{col_type}'."
     # Vérifie si la valeur à remplacer existe dans la colonne
     if old_value not in df[col].values:
-        return df, f"La valeur '{old_value}' n'est pas présente dans la colonne '{col}'."
+        message =  f"La valeur '{old_value}' n'est pas présente dans la colonne '{col}'."
+    else:
+        df[col] = df[col].replace(old_value, new_value)
+        message = f"Remplacement de '{old_value}' par '{new_value}' effectué avec succès dans la colonne '{col}'."
+    return df, message
 
-    # Effectue le remplacement
-    df[col] = df[col].replace(old_value, new_value)
-    return df, f"Remplacement de '{old_value}' par '{new_value}' effectué avec succès dans la colonne '{col}'."
+def encode_categorical(df, col, encoding_method):
+    if isinstance(col, str):
+        col = [col]
+    col2 =col.copy()
+    for c in col2 :
+        if c not in df.columns:
+            col.remove(c)
+    if len(col)>0:
+        if encoding_method == "One Hot":
+            encoder = OneHotEncoder(sparse_output=False, drop='first')
+            encoded = encoder.fit_transform(df[col])
+            encoded_df = pd.DataFrame(encoded, columns=encoder.get_feature_names_out(col))
+            df = df.drop(columns=col).reset_index(drop=True)
+            df = pd.concat([df, encoded_df], axis=1)
+
+        elif encoding_method == "Label":
+            for column in col:
+                le = LabelEncoder()
+                df[column] = le.fit_transform(df[column])
+
+        else:
+            return df, "Méthode d'encodage invalide. Utilisez 'onehot' ou 'label'."
+    else :
+        return df, "Colonne n'existe pas"
+
+    return df , " tout c'est bien passé"
+
+def encode_numerical(df,col,encoding_method):
+    if isinstance(col, str):
+        col = [col]
+    col2 =col.copy()
+    for c in col2 :
+        if c not in df.columns:
+            col.remove(c)
+    if len(col)>0:
+        if encoding_method == "Standard":
+            scaler = StandardScaler() 
+        elif encoding_method == "Min-Max":
+            scaler = MinMaxScaler()
+        else:
+            return df, "Méthode d'encodage invalide. Utilisez 'onehot' ou 'label'."
+        encoded = scaler.fit_transform(df[[col]])
+        encoded_df = pd.DataFrame(encoded, columns=scaler.get_feature_names_out(col))
+        df = df.drop(columns=col).reset_index(drop=True)
+        df = pd.concat([df, encoded_df], axis=1)
+    else :
+        return df, "Colonne n'existe pas"
+    return df ,'tout est bon'
