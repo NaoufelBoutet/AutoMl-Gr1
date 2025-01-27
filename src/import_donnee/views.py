@@ -10,7 +10,7 @@ from io import BytesIO
 from django.contrib.auth.decorators import login_required
 import re
 import numpy as np
-from sklearn.preprocessing import StandardScaler, OneHotEncoder, LabelEncoder,MinMaxScaler
+from sklearn.preprocessing import StandardScaler, OneHotEncoder, LabelEncoder,MinMaxScaler,RobustScaler
 from sklearn.model_selection import train_test_split
 
 @login_required
@@ -143,7 +143,7 @@ def creer_project(request):
 
 @login_required
 def process_dataset(request, project_name, filename, a):
-    methods, method_col, msg, liste_encod_cat,liste_encod_num= ['drop', 'mode', 'median', 'mean'], {'drop': 'columns', 'mode': 'numerical_columns', 'mean': 'numerical_columns', 'median': 'numerical_columns'},None,['One Hot','Label'],['Standard','Min-Max']
+    methods, method_col, msg, liste_encod_cat,liste_encod_num= ['drop', 'mode', 'median', 'mean'], {'drop': 'columns', 'mode': 'numerical_columns', 'mean': 'numerical_columns', 'median': 'numerical_columns'},None,['One Hot','Label'],['Standard','Min-Max','Robust']
     username = request.user.username
     db, client = get_db_mongo('Auto_ML', 'localhost', 27017)
     if a == 0:
@@ -178,13 +178,16 @@ def process_dataset(request, project_name, filename, a):
             df,msg = replace(df,col,old_value,new_value)
         if action == 'action4':
             col,encoding_method = request.POST.getlist('columns', None), request.POST.get('encoding_method', None)
-            print(col, encoding_method)
             df, message = encode_categorical(df, col, encoding_method)
         if action == 'action5':
             col,encoding_method = request.POST.getlist('columns', None), request.POST.get('encoding_method', None)
-            print(col, encoding_method)
             df,message=encode_numerical(df,col,encoding_method)
 
+
+        if action == 'save_df':
+            print('ouuuuuuuuuuuuuuuuuuui')
+            response=save_dataset(filename,project_name,username,df)
+            print(response)
         # Mettez à jour le DataFrame dans la session
         request.session['df'] = df.to_dict()
         columns, dico_type, rows = afficher_df(df)
@@ -411,6 +414,8 @@ def encode_numerical(df,col,encoding_method):
             scaler = StandardScaler() 
         elif encoding_method == "Min-Max":
             scaler = MinMaxScaler()
+        elif encoding_method == "Robust":
+            scaler = RobustScaler()
         else:
             return df, "Méthode d'encodage invalide. Utilisez 'onehot' ou 'label'."
         print(df.columns)

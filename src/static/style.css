@@ -227,3 +227,38 @@
     margin-top: 5px;
     color: #555;
 }
+
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background-color: #f4f4f9;
+}
+
+/* Style pour le bouton */
+.save-button {
+    background-color: #4CAF50; /* Couleur de fond */
+    border: none;
+    color: white; /* Couleur du texte */
+    padding: 20px 40px; /* Taille du bouton */
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 24px; /* Taille du texte */
+    font-weight: bold;
+    border-radius: 8px; /* Coins arrondis */
+    cursor: pointer;
+    transition: background-color 0.3s; /* Transition pour l'effet hover */
+}
+
+/* Effet au survol du bouton */
+.save-button:hover {
+    background-color: #45a049; /* Couleur légèrement plus foncée au survol */
+}
+
+/* Effet lors du clic sur le bouton */
+.save-button:active {
+    background-color: #388e3c; /* Couleur encore plus foncée lors du clic */
+}
