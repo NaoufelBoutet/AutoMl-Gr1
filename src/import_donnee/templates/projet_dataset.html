@@ -57,27 +57,29 @@
 </head>
 <body>
     <nav>
-        <a href="{% url 'accueil' %}">Accueil</a>
-        {% if not user.is_authenticated %}
-        <a href="{% url 'inscription' %}">Inscription</a>
-        {% endif %}
-        {% if not user.is_authenticated %}
-        <a href="{% url 'connexion' %}">Connexion</a>
-        {% endif %}
         {% if user.is_authenticated %}
+        <a href="{% url 'accueil' %}">Accueil</a>
         <a href="{% url 'deconnexion' %}">Déconnexion</a>
         {% endif %}
-        {% if user.is_authenticated %}
-        <a href="{% url 'projects' %}">Retourner à mes projets</a>
+        {% if not user.is_authenticated %}
+        <a href="{% url 'inscription' %}">Inscription</a>
+        <a href="{% url 'connexion' %}">Connexion</a>
         {% endif %}
-    
+       
+      
 </nav>
+<form method="post" action="{% url 'projects' %}">
+    {% csrf_token %}
+    <div class="button-group">
+        <button type="submit" class="btn btn-primary">Revenir à vos projets</button>
+    </div>
+</form>
 
 
-<h1>Projet : {{ project_name|slice:":30" }}{% if project_name|length > 30 %}...{% endif %}</h1>
 <div class="project-details">
     
     <div class="project-content">
+        <h1>Projet : {{ project_name|slice:":30" }}{% if project_name|length > 30 %}...{% endif %}</h1>
         <form method="post" enctype="multipart/form-data" action="{% url 'upload_fichier' %}">
             {% csrf_token %}
             <input type="hidden" name="projet_name" value="{{ project_name }}">
@@ -126,13 +128,16 @@
             <input type="hidden" name="project_name" value="{{ project_name }}">
             <div class="button-group" style="margin-top: 15px;">
                 <button type="submit" name="action" value="action3" class="btn btn-primary">
-                    Supprimer les données
+                    Suppression des données
                 </button>
                 <button type="submit" name="action" value="action1" class="btn btn-primary">
-                    Afficher les données
+                    Affichage des données
                 </button>
                 <button type="submit" name="action" value="action2" class="btn btn-success">
-                    Nettoyer les données
+                    Nettoyage des données
+                </button>
+                <button type="submit" name="action" value="action4" class="btn btn-success">
+                    Visualisation des données
                 </button>
             </div>
         </fieldset>
