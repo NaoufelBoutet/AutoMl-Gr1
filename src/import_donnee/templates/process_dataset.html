@@ -9,48 +9,44 @@
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet">
-        
-        <link rel="stylesheet" href="https://cdn.datatables.net/1.10.21/css/jquery.dataTables.min.css">
-        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-        <script src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
 
+        <!-- Chargement de jQuery et Select2 -->
         <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
         <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 
-
     </head>
     <body>
-        <script src="{% static 'scripts.js' %}"></script>
-        
+
         <nav class="nav_black">
             <a href="{% url 'home' %}" class="a_nav_black">
                 <div class="nav_police_black">
-                HOME
+                    HOME
                 </div>
             </a>
             <a href="{% url 'perso'%}" class="a_nav_black">
                 <div class="nav_police_black">
-                Espace Perso
+                    Espace Perso
                 </div>
             </a>
         </nav>
+
         <main>
             <section>
                 <h1>Suppression des doublons</h1>
-                {%if dico_info%}
-                    <p>Le df contient {{dico_info.nb_colonne_double}} ligne dupliqué</p>
-                {%endif%}
-                <form method="post" action="{% url 'process_dataset' project_name=project_name filename=filename a=a%}">
+                {% if dico_info %}
+                    <p>Le df contient {{ dico_info.nb_colonne_double }} ligne(s) dupliqué(s)</p>
+                {% endif %}
+                <form method="post" action="{% url 'process_dataset' project_name=project_name filename=filename a=a %}">
                     {% csrf_token %}
                     <button type="submit" name="action_process" value="action2">Suppression des doublons</button>
                 </form>
             </section>
+
             <section>
                 <h2>Gestion des valeurs manquantes</h2>
                 <form method="post" action="{% url 'process_dataset' project_name=project_name filename=filename a=a %}">
                     {% csrf_token %}
-                    
                     <!-- Sélection de la colonne -->
                     <label for="column-select">Choisissez une colonne:</label>
                     <select id="column-select" name="column" required onchange="updateMethodOptions()">
@@ -59,180 +55,170 @@
                             <option value="{{ column }}">{{ column }}</option>
                         {% endfor %}
                     </select>
-                
+
                     <!-- Sélection de la méthode -->
                     <label for="method-select">Choisissez une méthode:</label>
                     <select id="method-select" name="method" required onchange="toggleCustomMethod()">
                         <option value="" disabled selected>-- Sélectionnez une méthode --</option>
-                        <!-- Les options seront générées dynamiquement en JavaScript -->
                     </select>
-                
+
                     <!-- Boîte de texte pour la méthode personnalisée -->
                     <div id="replace-method-container" style="display: none;">
                         <label for="replace-text">Remplacer</label>
                         <input type="text" id="replace-text" name="replace-text" placeholder="Valeur de remplacement">
                     </div>
-                
+
                     <button type="submit" name="action_process" value="action1">Appliquer</button>
                 </form>
-                
             </section>
+
             <section>
-            <h2>remplacer une valeur dans une colonne</h2>
-            <form method="post" action="{% url 'process_dataset' project_name=project_name filename=filename a=a%}">
-                {% csrf_token %}
-                <label for="column-select">Choisissez une colonne:</label>
+                <h2>Remplacer une valeur dans une colonne</h2>
+                <form method="post" action="{% url 'process_dataset' project_name=project_name filename=filename a=a %}">
+                    {% csrf_token %}
+                    <label for="column-select">Choisissez une colonne:</label>
                     <select id="column-select" name="column" required>
-                        <option value="" disabled selected >-- Sélectionnez une colonne --</option>
+                        <option value="" disabled selected>-- Sélectionnez une colonne --</option>
                         {% for column in columns %}
                             <option value="{{ column }}">{{ column }}</option>
                         {% endfor %}
                     </select>
-                <label for="text-to-replace">Remplace</label>
-                    <input type="text" id="text-to-replace" name="text-to-replace" placeholder="Valeur a remplacer">
-                <label for="replace-text2">Remplacer par...</label>
+                    <label for="text-to-replace">Remplacer</label>
+                    <input type="text" id="text-to-replace" name="text-to-replace" placeholder="Valeur à remplacer">
+                    <label for="replace-text2">Remplacer par...</label>
                     <input type="text" id="replace-text2" name="replace-text2" placeholder="Valeur de remplacement">
-                <button type="submit" name="action_process" value="action3">Appliquer</button>
-            </form>
-            {%if message%}
-                <p> {{message}}</p>
-            {%endif%}
+                    <button type="submit" name="action_process" value="action3">Appliquer</button>
+                </form>
+                {% if message %}
+                    <p>{{ message }}</p>
+                {% endif %}
             </section>
 
-
             <section>
-                <h1>Choisissez les colonnes à encoder</h1>
-                    <form method="post" action="{% url 'process_dataset' project_name=project_name filename=filename a=a%}">
-                        {% csrf_token %}
-
-                        <!-- Sélection multiple avec recherche -->
-                        <label for="columns">Colonnes disponibles :</label>
-                        <select class="select_mult" id="columns_cat" name="columns" multiple="multiple" style="width: 100%;">
-                            {% for col in categorical_columns %}
-                                <option value="{{ col}}">{{ col }}</option>
-                            {% endfor %}
-                        </select>
-
-                        <!-- Méthode d'encodage -->
-                        <h3>Méthode d'encodage :</h3>
-                        {% for value in encoding_methods_cat %}
-                            <label>
-                                <input type="radio" name="encoding_method" value="{{ value }}">
-                                {{ value }}
-                            </label><br>
+                <h1>Choisissez les colonnes à encoder (Catégoriques)</h1>
+                <form method="post" action="{% url 'process_dataset' project_name=project_name filename=filename a=a %}">
+                    {% csrf_token %}
+                    <label for="columns">Colonnes disponibles :</label>
+                    <select class="select_mult" id="columns_cat" name="columns" multiple="multiple" style="width: 100%;">
+                        {% for col in categorical_columns %}
+                            <option value="{{ col }}">{{ col }}</option>
                         {% endfor %}
-                        <button type="submit" name="action_process" value="action4">Valider</button>
-                    </form>
-                                
-                
-            </section>
-    
-            <section>
-                <h1>Choisissez les colonnes à encoder</h1>
-                    <form method="post" action="{% url 'process_dataset' project_name=project_name filename=filename a=a%}">
-                        {% csrf_token %}
+                    </select>
 
-                        <!-- Sélection multiple avec recherche -->
-                        <label for="columns">Colonnes disponibles :</label>
-                        <select class="select_mult" id="columns_num" name="columns" multiple="multiple" style="width: 100%;">
-                            {% for col in numerical_columns %}
-                                <option value="{{ col}}">{{ col }}</option>
-                            {% endfor %}
-                        </select>
-                        <!-- Méthode d'encodage -->
-                        <h3>Méthode d'encodage :</h3>
-                        {% for value in encoding_methods_num %}
-                            <label>
-                                <input type="radio" name="encoding_method" value="{{ value }}">
-                                {{ value }}
-                            </label><br>
-                        {% endfor %}
-                        <button type="submit" name="action_process" value="action5">Valider</button>
-                    </form>
+                    <h3>Méthode d'encodage :</h3>
+                    {% for value in encoding_methods_cat %}
+                        <label>
+                            <input type="radio" name="encoding_method" value="{{ value }}">
+                            {{ value }}
+                        </label><br>
+                    {% endfor %}
+                    <button type="submit" name="action_process" value="action4">Valider</button>
+                </form>
             </section>
+
             <section>
-                <form method="post" action="{% url 'process_dataset' project_name=project_name filename=filename a=a%}">
+                <h1>Choisissez les colonnes à encoder (Numériques)</h1>
+                <form method="post" action="{% url 'process_dataset' project_name=project_name filename=filename a=a %}">
+                    {% csrf_token %}
+                    <label for="columns">Colonnes disponibles :</label>
+                    <select class="select_mult" id="columns_num" name="columns" multiple="multiple" style="width: 100%;">
+                        {% for col in numerical_columns %}
+                            <option value="{{ col }}">{{ col }}</option>
+                        {% endfor %}
+                    </select>
+
+                    <h3>Méthode d'encodage :</h3>
+                    {% for value in encoding_methods_num %}
+                        <label>
+                            <input type="radio" name="encoding_method" value="{{ value }}">
+                            {{ value }}
+                        </label><br>
+                    {% endfor %}
+                    <button type="submit" name="action_process" value="action5">Valider</button>
+                </form>
+            </section>
+
+            <section>
+                <form method="post" action="{% url 'process_dataset' project_name=project_name filename=filename a=a %}">
                     {% csrf_token %}
                     <button type="submit" class="save-button" name="action_process" value="save_df" onclick="alert('Données sauvegardées !')">Sauvegarder</button>
                 </form>
             </section>
+
             <section>
                 <h2>Aperçu du dataset</h2>
                 {% if dico_type and rows %}
-            <div>
-                <table id="dataframe-table_2" class="df">
-                    <thead>
-                        <tr>
-                            {% for col in columns %}
-                                <th>{{ col }} ({{ dico_type|dict_get:col }})</th>
-                            {% endfor %}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for row in rows %}
+                <div>
+                    <table id="dataframe-table_2" class="df">
+                        <thead>
                             <tr>
                                 {% for col in columns %}
-                                    <td>{{ row|dict_get:col }}</td>
+                                    <th>{{ col }} ({{ dico_type|dict_get:col }})</th>
                                 {% endfor %}
                             </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-            {% else %}
-            <p>Le DataFrame est vide ou non défini.</p>
-            {% endif %}
+                        </thead>
+                        <tbody>
+                            {% for row in rows %}
+                                <tr>
+                                    {% for col in columns %}
+                                        <td>{{ row|dict_get:col }}</td>
+                                    {% endfor %}
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p>Le DataFrame est vide ou non défini.</p>
+                {% endif %}
             </section>
         </main>
+
+        <script src="{% static 'scripts.js' %}"></script>
         <script>
+            $(document).ready(function() {
+                $('.select_mult').select2({
+                    placeholder: "Sélectionnez des colonnes",
+                    allowClear: true
+                });
+            });
+
             // Définir les colonnes numériques
             const numericalColumns = [
                 {% for column in numerical_columns %}
                     "{{ column|escapejs }}",  // Utiliser escapejs pour éviter les caractères spéciaux HTML
                 {% endfor %}
             ];
-        
+
             const allColumns = [
                 {% for column in columns %}
                     "{{ column|escapejs }}",  // Utiliser escapejs pour éviter les caractères spéciaux HTML
                 {% endfor %}
             ];
-        
+
             const methodCol = {
-                "drop": "columns",    // drop peut être appliqué à toutes les colonnes
+                "drop": "columns",
                 "mode": "numerical_columns",
                 "median": "numerical_columns",
                 "mean": "numerical_columns",
                 "replace": "columns"  // Méthode personnalisée applicable à toutes les colonnes
             };
-        
+
             function updateMethodOptions() {
                 const columnSelect = document.getElementById("column-select");
-                const methodSelectContainer = document.getElementById("method-select-container");
                 const methodSelect = document.getElementById("method-select");
-        
-                // Récupérer la colonne sélectionnée et la nettoyer
+
                 const selectedColumn = columnSelect.value.trim();
-        
                 if (selectedColumn) {
-                    // Vérifier si la colonne sélectionnée est numérique
                     const isNumerical = numericalColumns.includes(selectedColumn);
-        
-                    // Réinitialiser la liste des méthodes
                     methodSelect.innerHTML = '<option value="" disabled selected>-- Sélectionnez une méthode --</option>';
-        
-                    // Ajouter "drop" pour toutes les colonnes
+
                     const availableMethods = ["drop"];
-        
-                    // Ajouter les méthodes pour les colonnes numériques
                     if (isNumerical) {
                         availableMethods.push("mean", "median", "mode");
                     }
-        
-                    // Ajouter la méthode personnalisée qui est applicable à toutes les colonnes
                     availableMethods.push("replace");
-        
-                    // Ajouter les méthodes disponibles comme options
+
                     availableMethods.forEach(method => {
                         const option = document.createElement("option");
                         option.value = method;
@@ -241,28 +227,17 @@
                     });
                 }
             }
-        
+
             function toggleCustomMethod() {
                 const methodSelect = document.getElementById("method-select");
                 const customMethodContainer = document.getElementById("replace-method-container");
-        
-                // Si la méthode choisie est "custom", afficher la boîte de texte
+
                 if (methodSelect.value === "replace") {
                     customMethodContainer.style.display = "block";
                 } else {
                     customMethodContainer.style.display = "none";
                 }
             }
-            $(document).ready(function() {
-                $('.select_mult').select2({
-                    placeholder: "Sélectionnez des colonnes",
-                    allowClear: true
-                });
-            });
-        
         </script>
-        
-        
-        
     </body>
 </html>
