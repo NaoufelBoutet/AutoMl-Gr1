@@ -5,7 +5,6 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         {% load filters %}
         {% load static %}
-        <script src="{% static 'scripts.js' %}"></script>
         <link rel="stylesheet" href="{% static 'style.css' %}">
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -22,6 +21,8 @@
 
     </head>
     <body>
+        <script src="{% static 'scripts.js' %}"></script>
+        
         <nav class="nav_black">
             <a href="{% url 'home' %}" class="a_nav_black">
                 <div class="nav_police_black">
@@ -159,7 +160,7 @@
                 <h2>Aperçu du dataset</h2>
                 {% if dico_type and rows %}
             <div>
-                <table id="dataframe-table_2" class="dataframe-table">
+                <table id="dataframe-table_2" class="df">
                     <thead>
                         <tr>
                             {% for col in columns %}

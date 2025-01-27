@@ -82,7 +82,7 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 $(document).ready(function() {
-    $('.dataframe-table').DataTable({
+    $('.df').DataTable({
         paging: true,
         pageLength: 25,
         lengthMenu: [10, 25, 50, 75, 100]
