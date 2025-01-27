@@ -416,8 +416,6 @@ def encode_numerical(df,col,encoding_method):
             scaler = RobustScaler()
         else:
             return df, "Méthode d'encodage invalide. Utilisez 'onehot' ou 'label'."
-        print(df.columns)
-        print(col)
         encoded = scaler.fit_transform(df[col])
         encoded_df = pd.DataFrame(encoded, columns=scaler.get_feature_names_out(col))
         df = df.drop(columns=col).reset_index(drop=True)

@@ -80,3 +80,19 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 });
+
+$(document).ready(function() {
+    $('.dataframe-table').DataTable({
+        paging: true,
+        pageLength: 25,
+        lengthMenu: [10, 25, 50, 75, 100]
+    });
+});
+document.getElementById('toggle-button').addEventListener('click', function() {
+    var div = document.getElementById('toggle-div');
+    if (div.style.display === 'none') {
+        div.style.display = 'block'; // Affiche la div
+    } else {
+        div.style.display = 'none'; // Cache la div
+    }
+});

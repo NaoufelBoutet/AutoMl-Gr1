@@ -93,7 +93,7 @@
         <br><br>
         {% if dico_type and rows %}
             <div>
-                <table id="dataframe-table" class="display">
+                <table id="dataframe-table_1" class="dataframe-table">
                     <thead>
                         <tr>
                             {% for col in columns %}
@@ -117,22 +117,5 @@
             {% endif %}
 
         <!-- Initialisation de DataTables -->
-        <script>
-            $(document).ready(function() {
-                $('#dataframe-table').DataTable({
-                    paging: true,
-                    pageLength: 25,
-                    lengthMenu: [10, 25, 50, 75, 100]
-                });
-            });
-            document.getElementById('toggle-button').addEventListener('click', function() {
-                var div = document.getElementById('toggle-div');
-                if (div.style.display === 'none') {
-                    div.style.display = 'block'; // Affiche la div
-                } else {
-                    div.style.display = 'none'; // Cache la div
-                }
-            });
-        </script>
     </body>
 </html>
