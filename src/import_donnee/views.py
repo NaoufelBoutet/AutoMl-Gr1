@@ -185,9 +185,7 @@ def process_dataset(request, project_name, filename, a):
 
 
         if action == 'save_df':
-            print('ouuuuuuuuuuuuuuuuuuui')
             response=save_dataset(filename,project_name,username,df)
-            print(response)
         # Mettez à jour le DataFrame dans la session
         request.session['df'] = df.to_dict()
         columns, dico_type, rows = afficher_df(df)
