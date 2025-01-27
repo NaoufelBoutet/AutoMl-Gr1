@@ -106,7 +106,7 @@
 
                         <!-- Sélection multiple avec recherche -->
                         <label for="columns">Colonnes disponibles :</label>
-                        <select id="columns" name="columns" multiple="multiple" style="width: 100%;">
+                        <select class="select_mult" id="columns_cat" name="columns" multiple="multiple" style="width: 100%;">
                             {% for col in categorical_columns %}
                                 <option value="{{ col}}">{{ col }}</option>
                             {% endfor %}
@@ -133,7 +133,7 @@
 
                         <!-- Sélection multiple avec recherche -->
                         <label for="columns">Colonnes disponibles :</label>
-                        <select id="columns" name="columns" multiple="multiple" style="width: 100%;">
+                        <select class="select_mult" id="columns_num" name="columns" multiple="multiple" style="width: 100%;">
                             {% for col in numerical_columns %}
                                 <option value="{{ col}}">{{ col }}</option>
                             {% endfor %}
@@ -248,9 +248,9 @@
                 }
             }
             $(document).ready(function() {
-                $('#columns').select2({
+                $('.select_mult').select2({
                     placeholder: "Sélectionnez des colonnes",
-                    allowClear: true,
+                    allowClear: true
                 });
             });
         

@@ -371,6 +371,7 @@ def replace(df, col, old_value, new_value):
     return df, message
 
 def encode_categorical(df, col, encoding_method):
+    magic_clean(df)
     if isinstance(col, str):
         col = [col]
     col2 =col.copy()
@@ -398,6 +399,7 @@ def encode_categorical(df, col, encoding_method):
     return df , " tout c'est bien passé"
 
 def encode_numerical(df,col,encoding_method):
+    magic_clean(df)
     if isinstance(col, str):
         col = [col]
     col2 =col.copy()
@@ -411,7 +413,9 @@ def encode_numerical(df,col,encoding_method):
             scaler = MinMaxScaler()
         else:
             return df, "Méthode d'encodage invalide. Utilisez 'onehot' ou 'label'."
-        encoded = scaler.fit_transform(df[[col]])
+        print(df.columns)
+        print(col)
+        encoded = scaler.fit_transform(df[col])
         encoded_df = pd.DataFrame(encoded, columns=scaler.get_feature_names_out(col))
         df = df.drop(columns=col).reset_index(drop=True)
         df = pd.concat([df, encoded_df], axis=1)
