@@ -1,0 +1,33 @@
+<html>
+    <head>
+        <title>Espace import data</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        {% load filters %}
+        {% load static %}
+        <link rel="stylesheet" href="{% static 'style.css' %}">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet">
+
+        <link rel="stylesheet" href="https://cdn.datatables.net/1.10.21/css/jquery.dataTables.min.css">
+    </head>
+    <body>
+        <nav class="nav_black">
+            <a href="{% url 'home'%}" class="a_nav_black">
+                <div class="nav_police_black">
+                HOME
+                </div>
+            </a>
+            <a href="{% url 'perso' %}" class="a_nav_black">
+                <div class="nav_police_black">
+                Espace Perso
+                </div>
+            </a>
+            <a href="{% url 'liste_project' %}" class="a_nav_black">
+                <div class="nav_police_black">
+                Project
+                </div>
+            </a>
+        </nav>
+    </body>

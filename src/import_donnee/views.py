@@ -92,6 +92,14 @@ def project(request,project_name):
             projet=collection.find_one({'username':username,'nom_projet':project_name})
             liste_dataset=projet['data_set']
             return render(request,'project.html',{'username':username,'project_name':project_name,'liste_dataset':liste_dataset})
+        elif action=="action4":
+            fs = gridfs.GridFS(db)
+            grid_out = fs.find_one({"metadata.username": username, 'metadata.filename': filename,'metadata.project_name':project_name})
+            if grid_out: 
+                return redirect('viz_data',project_name,filename)
+            else:
+                return render(request,'project.html',{'username':username,'project_name':project_name,'liste_dataset':liste_dataset,
+                                                        'filename':filename,})
     else :
         return render(request,'project.html',{'username':username,'project_name':project_name,'liste_dataset':liste_dataset})
 
@@ -183,7 +191,6 @@ def process_dataset(request, project_name, filename, a):
             col,encoding_method = request.POST.getlist('columns', None), request.POST.get('encoding_method', None)
             df,message=encode_numerical(df,col,encoding_method)
 
-
         if action == 'save_df':
             response=save_dataset(filename,project_name,username,df)
         # Mettez à jour le DataFrame dans la session
@@ -196,6 +203,11 @@ def process_dataset(request, project_name, filename, a):
         'filename': filename,'method_col': method_col,'a': a,"dico_info":dico_info,"message":msg,'encoding_methods_cat':liste_encod_cat,
         'encoding_methods_num':liste_encod_num})
 
+@login_required
+def viz_data(request, project_name, filename):
+    username = request.user.username
+    db, client = get_db_mongo('Auto_ML', 'localhost', 27017)
+    return render(request,'viz_data.html',{'username': username,'project_name': project_name,'filename': filename})
 
 def info_df(df):
     ligne = df.shape[0]
@@ -247,7 +259,6 @@ def magic_clean(df):
     for col in df.select_dtypes(include=['object']).columns:
         df[col] = df[col].astype(str).str.replace(r'[\s\x00-\x1F\x7F-\x9F]+', '', regex=True)
         df[col] = pd.to_numeric(df[col], errors='ignore')
-        df[col] = df[col].astype(str).str.replace(',', '.', regex=False)
         try :
             converted = pd.to_numeric(df[col], errors='raise')
             if converted.notna().all():
