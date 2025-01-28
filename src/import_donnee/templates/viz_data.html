@@ -62,22 +62,34 @@
         <section>
             {% for fig in figs %}
                 <br>
-                    <div>
-                        <form method="post" action="{% url 'viz_data' project_name=project_name filename=filename %}">
-                            <!-- CSRF token obligatoire -->
-                            {% csrf_token %}
-                            
-                            <img src="data:image/png;base64,{{ fig }}" alt="Graphique" />
-                            
-                            <!-- Champ caché pour transmettre la figure -->
-                            <input type="hidden" name="fig_data" value="{{ forloop.counter0 }}" />
-                            
-                            <button type="submit" name="action_process" value="save">Sauvegarder le graphique</button>
-                            <button type="submit" name="action_process" value="del">Supprimer le graphique</button>
-                        </form>
-                    </div>
+                <div>
+                    <form method="post" action="{% url 'viz_data' project_name=project_name filename=filename %}" id="form-{{ forloop.counter0 }}">
+                        {% csrf_token %}
+                        
+                        <img src="data:image/png;base64,{{ fig }}" alt="Graphique" />
+                        
+                        <!-- Champ caché pour transmettre la figure -->
+                        <input type="hidden" name="fig_data" value="{{ forloop.counter0 }}" />
+                        <input type="hidden" name="graph_name" id="graph-name-{{ forloop.counter0 }}" value="" />
+                        <input type="hidden" name="action_process" id="action-process-{{ forloop.counter0 }}" value="" />
+                        
+                        <button type="button" onclick="openModal({{ forloop.counter0 }})">Sauvegarder le graphique</button>
+                        <button type="submit" name="action_process" value="del">Supprimer le graphique</button>
+                    </form>
+                </div>
             {% endfor %}
         </section>
+        
+        <!-- Modale -->
+        <div id="modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); justify-content: center; align-items: center;">
+            <div style="background: white; padding: 20px; border-radius: 8px; text-align: center;">
+                <h3>Entrer un nom pour le graphique</h3>
+                <input type="text" id="graph-name-input" placeholder="Nom du graphique" />
+                <br><br>
+                <button onclick="submitForm()">Valider</button>
+                <button onclick="closeModal()">Annuler</button>
+            </div>
+        </div>
 
         <script>
         $(document).ready(function() {
@@ -86,5 +98,29 @@
                 allowClear: true
             });
         });
+        let currentFormId = null;
+
+        function openModal(formId) {
+            currentFormId = formId;
+            document.getElementById('modal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('modal').style.display = 'none';
+            currentFormId = null;
+        }
+
+        function submitForm() {
+            const graphName = document.getElementById('graph-name-input').value;
+            if (graphName.trim() === "") {
+                alert("Veuillez entrer un nom pour le graphique.");
+                return;
+            }
+            // Ajouter le nom au champ caché du formulaire
+            document.getElementById(`graph-name-${currentFormId}`).value = graphName;
+            document.getElementById(`action-process-${currentFormId}`).value = "save";
+            // Soumettre le formulaire
+            document.getElementById(`form-${currentFormId}`).submit();
+        }
         </script>
     </body>

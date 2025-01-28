@@ -149,7 +149,7 @@ def creer_project(request):
             if test_nom:
                 print('erreur_nom')
             else :
-                ajout=collection.insert_one({"nom_projet": nom_projet, "username": request.user.username, 'id_user':request.user.id,'data_set':[]})
+                ajout=collection.insert_one({"nom_projet": nom_projet, "username": request.user.username, 'id_user':request.user.id,'data_set':[],'graphique':[]})
                 project_id = ajout.inserted_id
                 collection2.update_one({"username": request.user.username},{"$push": {"projet": project_id}})  
     return redirect('liste_project')
@@ -229,12 +229,16 @@ def viz_data(request, project_name, filename):
             elif method!=None:
                 figs.append(plot_1D(df,col,method))
         if action == 'save':
-            pass
+            name = request.POST.get('graph_name', None)
+            fig_save = request.POST.get('fig_data',None)
+            graph_name = filename + "__" + name
+            message = save_graph(graph_name,project_name,username,figs[int(fig_save)])
+            print(message)
         if action =='del':
             fig_del = request.POST.get('fig_data',None)
             figs.pop(int(fig_del))
         request.session['figs'] = figs
-        print(figs)
+
     return render(request,'viz_data.html',{'username': username,'project_name': project_name,'filename': filename,'methods':methods,
                                            'numerical_columns':numerical_columns, 'figs':figs, 'message':message})
 
@@ -326,6 +330,29 @@ def save_dataset(filename,project_name,username,df):
         csv_buffer.seek(0)
         new_file_id = fs.put(csv_buffer.getvalue(), filename=filename2, metadata=metadata)
         return new_file_id
+
+def save_graph(filename,project_name,username,file):
+    db, client = get_db_mongo('Auto_ML','localhost',27017)
+    fs = gridfs.GridFS(db)
+    test_file = fs.find_one({"metadata.username": username,"metadata.project_name":project_name,"metadata.filename":filename})
+    collection=db['Projet']
+    if not test_file:
+        try:
+            # Tenter de décoder en base64
+            file_binary = base64.b64decode(file)
+            file = io.BytesIO(file_binary)  # Convertir en objet fichier
+        except Exception as e:
+            # Si ce n'est pas du base64, considérer que c'est du texte brut
+            file = io.StringIO(file)
+        file_id = fs.put(file, filename={'graph_file_name':filename,'username':username}, 
+                            metadata={"username": username,'filename':filename,'project_name':project_name},
+                            chunkSizeBytes=1048576
+                        )
+        collection.update_one({'username':username,'nom_projet':project_name},{"$push": {"graphique": file_id}})
+        return 'graphique sauvegarder'
+    else:
+        return 'graphique deja existant'
+        
 
 def colonne_type(df):
     return {
