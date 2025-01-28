@@ -224,6 +224,7 @@ def viz_data(request, project_name, filename):
         if action=='action0':
             graph=request.POST.get('graph', None)
             figs.append(dic_graph[graph])
+            liste_graph_name, dic_graph = liste_graph(db, username, project_name)
         if action=='action1':
             col, method = request.POST.getlist('columns', None),request.POST.get('method', None)
             if 'all' in col:
@@ -373,10 +374,6 @@ def liste_graph(db, username, project_name):
             liste_graph_name.append(graph_file_name)
             dic_graph[graph_file_name]=base64.b64encode(graph.read()).decode('utf-8')
     return liste_graph_name, dic_graph
-
-
-
-
 
 
 def colonne_type(df):
