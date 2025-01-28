@@ -33,7 +33,7 @@
             </a>
         </nav>
         <section>
-            <h1>Choisissez les colonnes à encoder (Catégoriques)</h1>
+            <h1>Choisissez les colonnes à visualiser en hist ou box</h1>
             <form method="post" action="{% url 'viz_data' project_name=project_name filename=filename %}">
                 {% csrf_token %}
                 <label for="columns">Colonnes disponibles :</label>
@@ -53,15 +53,33 @@
                 {% endfor %}
                 <button type="submit" name="action_process" value="action1">Valider</button>
             </form>
-            <div>
-                {%if message%}
-                    {{message}}
-                {%endif%}
-            </div>
+            <h1>Choisissez les colonnes à visualiser en scatter</h1>
+            <form method="post" action="{% url 'viz_data' project_name=project_name filename=filename %}">
+                {% csrf_token %}
+                <label for="columns_1">Colonnes disponibles pour l'axe X:</label>
+                <select class="sel" id="columns_1" name="column1"  style="width: 100%;">
+                    {% for col in numerical_columns %}
+                        <option value="{{ col }}">{{ col }}</option>
+                    {% endfor %}
+                </select>
+                <label for="columns_2">Colonnes disponibles pour l'axe Y:</label>
+                <select class="sel" id="columns_2" name="column2"  style="width: 100%;">
+                    {% for col in numerical_columns %}
+                        <option value="{{ col }}">{{ col }}</option>
+                    {% endfor %}
+                </select>
+
+                <button type="submit" name="action_process" value="action2">Valider</button>
+            </form>
+            <h1>Faire une matrice de corrélation</h1>
+            <form method="post" action="{% url 'viz_data' project_name=project_name filename=filename %}">
+                {% csrf_token %}
+                <button type="submit" name="action_process" value="action3">Faire une matrice de Corrélation</button>
+            </form>
         </section>
             <form method="post" action="{% url 'viz_data' project_name=project_name filename=filename %}">
                 {% csrf_token %}
-                <label for="columns">Graph sauvegardé</label>
+                <label for="columns">Graph possédé :</label>
                 <select class="select" id="graphs" name="graph"  style="width: 100%;">
                     {% for graph in liste_graph_name %}
                         <option value="{{ graph }}">{{ graph }}</option>
@@ -82,15 +100,33 @@
                     <form method="post" action="{% url 'viz_data' project_name=project_name filename=filename %}" id="form-{{ forloop.counter0 }}">
                         {% csrf_token %}
                         
-                        <img src="data:image/png;base64,{{ fig }}" alt="Graphique" />
-                        
                         <!-- Champ caché pour transmettre la figure -->
-                        <input type="hidden" name="fig_data" value="{{ forloop.counter0 }}" />
                         <input type="hidden" name="graph_name" id="graph-name-{{ forloop.counter0 }}" value="" />
                         <input type="hidden" name="action_process" id="action-process-{{ forloop.counter0 }}" value="" />
-                        
-                        <button type="button" onclick="openModal({{ forloop.counter0 }})">Sauvegarder le graphique</button>
+                        <input type="hidden" name="fig_data" value="{{ forloop.counter0 }}" />
+
+                        <input type="hidden" name="graph_key_value" id="graph-key-value-{{ forloop.counter0 }}" value="" />
+                        <input type="hidden" name="fig" id="fig-{{ forloop.counter0 }}" value="{{ fig }}" />
+                        </br>
+                        {%if dic_graph%}
+                            {%if fig in figs_bdd%}
+                                <script>
+                                    // Récupérer la valeur de dic_graph|dict_get_key_by_value:fig et l'affecter au champ caché
+                                    const graphKeyValue = "{{ dic_graph|dict_get_key_by_value:fig }}";
+                                    document.getElementById('graph-key-value-{{ forloop.counter0 }}').value = graphKeyValue;
+                                </script>
+                                {{ dic_graph|dict_get_key_by_value:fig }}
+                            {%endif%}
+                        {%endif%}
+                        </br>
+                        {%if fig not in figs_bdd%}
+                            <button type="button" onclick="openModal({{ forloop.counter0 }})">Sauvegarder le graphique</button>
+                        {%endif%}
                         <button type="submit" name="action_process" value="del">Supprimer le graphique</button>
+                        {%if fig in figs_bdd%}
+                            <button type="button" id="del-bdd-button-{{ forloop.counter0 }}" onclick="handleDelBddClick({{ forloop.counter0 }})">Supprimer le graphique de la BDD</button>
+                        {%endif%}
+                        <img src="data:image/png;base64,{{ fig }}" alt="Graphique" />
                     </form>
                 </div>
             {% endfor %}
@@ -108,35 +144,94 @@
         </div>
 
         <script>
-        $(document).ready(function() {
-            $('.select_mult').select2({
-                placeholder: "Sélectionnez des colonnes",
-                allowClear: true
+            $(document).ready(function() {
+                $('.select_mult').select2({
+                    placeholder: "Sélectionnez des colonnes",
+                    allowClear: true
+                });
             });
-        });
-        let currentFormId = null;
-
-        function openModal(formId) {
-            currentFormId = formId;
-            document.getElementById('modal').style.display = 'flex';
-        }
-
-        function closeModal() {
-            document.getElementById('modal').style.display = 'none';
-            currentFormId = null;
-        }
-
-        function submitForm() {
-            const graphName = document.getElementById('graph-name-input').value;
-            if (graphName.trim() === "") {
-                alert("Veuillez entrer un nom pour le graphique.");
-                return;
+        
+            let currentFormId = null;
+        
+            function openModal(formId) {
+                currentFormId = formId;
+                document.getElementById('modal').style.display = 'flex';
             }
-            // Ajouter le nom au champ caché du formulaire
-            document.getElementById(`graph-name-${currentFormId}`).value = graphName;
-            document.getElementById(`action-process-${currentFormId}`).value = "save";
-            // Soumettre le formulaire
-            document.getElementById(`form-${currentFormId}`).submit();
-        }
+        
+            function closeModal() {
+                document.getElementById('modal').style.display = 'none';
+                currentFormId = null;
+            }
+        
+            function submitForm() {
+                const graphName = document.getElementById('graph-name-input').value;
+                if (graphName.trim() === "") {
+                    alert("Veuillez entrer un nom pour le graphique.");
+                    return;
+                }
+                // Ajouter le nom au champ caché du formulaire
+                document.getElementById(`graph-name-${currentFormId}`).value = graphName;
+                document.getElementById(`action-process-${currentFormId}`).value = "save";
+                // Soumettre le formulaire
+                document.getElementById(`form-${currentFormId}`).submit();
+            }
+        
+            // Nouvelle fonction pour supprimer un graphique
+            function handleDelClick(formId) {
+                // Récupérer la valeur de fig pour l'action "del"
+                const figValue = document.getElementById(`fig-${formId}`).value;
+        
+                // Mettre à jour l'action du formulaire pour "del"
+                document.getElementById(`action-process-${formId}`).value = "del";
+        
+                // Ajouter la valeur de `fig` au champ caché
+                document.getElementById(`fig-${formId}`).value = figValue;
+        
+                // Débogage (optionnel)
+                console.log("Fig Value (for delete):", figValue);
+        
+                // Soumettre le formulaire
+                document.getElementById(`form-${formId}`).submit();
+            }
+        
+            function handleDelBddClick(formId) {
+                // Mettre à jour les valeurs dans les champs cachés pour l'action "del_bdd"
+                const graphKeyValue = document.getElementById(`graph-key-value-${formId}`).value;
+                const figValue = document.getElementById(`fig-${formId}`).value;
+        
+                // Mettre à jour l'action pour "del_bdd"
+                document.getElementById(`action-process-${formId}`).value = "del_bdd";
+                
+                // Vous pouvez aussi mettre à jour la valeur de `fig`
+                document.getElementById(`fig-${formId}`).value = figValue;
+        
+                // Débogage (optionnel)
+                console.log("Graph Key Value:", graphKeyValue);  // Pour déboguer
+                console.log("Fig Value (for del_bdd):", figValue);  // Pour déboguer
+        
+                // Soumettre le formulaire
+                document.getElementById(`form-${formId}`).submit();
+            }
         </script>
+        
+        <style>
+            /* Style du formulaire pour utiliser flexbox */
+            #form-{{ forloop.counter0 }} {
+                display: flex;
+                flex-direction: column;  /* Aligner les éléments verticalement */
+                align-items: flex-start; /* Aligner les éléments à gauche (par défaut) */
+                gap: 10px;  /* Espacement entre les éléments */
+            }
+        
+            /* Style des boutons pour qu'ils restent au-dessus de l'image */
+            #form-{{ forloop.counter0 }} button {
+                margin-bottom: 10px;  /* Marge en bas des boutons pour espacer les autres éléments */
+            }
+        
+            /* Si vous voulez que l'image soit un peu plus petite ou stylisée */
+            #form-{{ forloop.counter0 }} img {
+                max-width: 100%;  /* Limiter la largeur de l'image */
+                height: auto;  /* Garder la proportion de l'image */
+            }
+        </style>
     </body>

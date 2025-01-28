@@ -13,6 +13,7 @@ import numpy as np
 from sklearn.preprocessing import StandardScaler, OneHotEncoder, LabelEncoder,MinMaxScaler,RobustScaler
 from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
+import seaborn as sns
 import base64
 import io
 import matplotlib
@@ -68,6 +69,7 @@ def project(request,project_name):
             fs = gridfs.GridFS(db)
             grid_out = fs.find_one({"metadata.username": username, 'metadata.filename': filename,'metadata.project_name':project_name})
             if grid_out: 
+                del request.session['df']
                 return redirect('process_dataset',project_name,filename)
             else:
                 return render(request,'project.html',{'username':username,'project_name':project_name,'liste_dataset':liste_dataset,
@@ -101,6 +103,7 @@ def project(request,project_name):
             fs = gridfs.GridFS(db)
             grid_out = fs.find_one({"metadata.username": username, 'metadata.filename': filename,'metadata.project_name':project_name})
             if grid_out: 
+                del request.session['df']
                 return redirect('viz_data',project_name,filename)
             else:
                 return render(request,'project.html',{'username':username,'project_name':project_name,'liste_dataset':liste_dataset,
@@ -160,6 +163,7 @@ def process_dataset(request, project_name, filename):
     username = request.user.username
     db, client = get_db_mongo('Auto_ML', 'localhost', 27017)
     df_dict = request.session.get('df', None) 
+    outliers,columns_out, dico_type_out, rows_out=None,None,None,None
     if df_dict is None:
         # Si le DataFrame n'est pas dans la session, le charger depuis GridFS
         fs = gridfs.GridFS(db)  # Assurez-vous que 'settings.DB' pointe vers votre base de données MongoDB
@@ -192,7 +196,25 @@ def process_dataset(request, project_name, filename):
         if action == 'action5':
             col,encoding_method = request.POST.getlist('columns', None), request.POST.get('encoding_method', None)
             df,message=encode_numerical(df,col,encoding_method)
-
+        if action == 'action6':
+            col = request.POST.getlist('columns', None)
+            outliers = func_outliers(df[numerical_columns],col)
+            df_outliers = df.loc[outliers]    
+            columns_out, dico_type_out, rows_out = afficher_df(df_outliers)
+        if action == 'del_outlier':
+            selected_rows = request.POST.getlist('selected_rows')
+            if 'all' in selected_rows:
+                selected_rows = request.POST.get('index_all', '').split(',')
+            else:
+                selected_rows = request.POST.getlist('selected_rows')
+            for element in selected_rows:
+                try:
+                    df=df.drop(index=element)
+                    message = 'Nickel'
+                except Exception as e:
+                    message = f'Erreur lors de la suppression de la ligne: {e}'
+                    pass      
+            
         if action == 'save_df':
             response=save_dataset(filename,project_name,username,df)
         # Mettez à jour le DataFrame dans la session
@@ -203,7 +225,7 @@ def process_dataset(request, project_name, filename):
     return render(request, 'process_dataset.html', {'username': username,'project_name': project_name,'columns': columns,'methods': methods,
         'categorical_columns': categorical_columns,'numerical_columns': numerical_columns,'df': df,'dico_type': dico_type,'rows': rows,
         'filename': filename,'method_col': method_col,'a': a,"dico_info":dico_info,"message":msg,'encoding_methods_cat':liste_encod_cat,
-        'encoding_methods_num':liste_encod_num})
+        'encoding_methods_num':liste_encod_num,'outliers':outliers,'columns_out':columns_out, 'dico_type_out':dico_type_out, 'rows_out':rows_out})
 
 @login_required
 def viz_data(request, project_name, filename):
@@ -216,14 +238,18 @@ def viz_data(request, project_name, filename):
     df = pd.read_csv(file_data, sep=',', on_bad_lines='warn')
     categorical_columns, numerical_columns = type_column(df)
     figs = request.session.get('figs', None) 
+    figs_bdd = request.session.get('figs_bdd', None) 
     liste_graph_name, dic_graph = liste_graph(db, username, project_name)
     if figs is None:
         figs=[]   
+    if figs_bdd is None:
+        figs_bdd=[]
     if request.method == 'POST':
         action = request.POST.get('action_process', None)
         if action=='action0':
             graph=request.POST.get('graph', None)
             figs.append(dic_graph[graph])
+            figs_bdd.append(dic_graph[graph])
             liste_graph_name, dic_graph = liste_graph(db, username, project_name)
         if action=='action1':
             col, method = request.POST.getlist('columns', None),request.POST.get('method', None)
@@ -233,19 +259,46 @@ def viz_data(request, project_name, filename):
                 message = "selectionner une colonne"
             elif method!=None:
                 figs.append(plot_1D(df,col,method))
+
+        if action == 'action2':
+            col1 = request.POST.get('column1', None)
+            col2 = request.POST.get('column2', None)
+            figs.append(scatterplot(col1,col2,df))
+        
+        if action == 'action3':
+            figs.append(matrix_corr(df[numerical_columns]))
+
         if action == 'save':
             name = request.POST.get('graph_name', None)
             fig_save = request.POST.get('fig_data',None)
             graph_name = filename + "__" + name
             message = save_graph(graph_name,project_name,username,figs[int(fig_save)])
+            figs_bdd.append(figs[int(fig_save)])
+            liste_graph_name, dic_graph = liste_graph(db, username, project_name)
         if action =='del':
-            fig_del = request.POST.get('fig_data',None)
-            figs.pop(int(fig_del))
-        request.session['figs'] = figs
+            fig_del = request.POST.get('fig',None)
+            try:
+                figs.remove(fig_del)
+                message = " Graph retiré "
+                print(message)
+            except:
+                pass
+        if action =='del_bdd':
+            fig_del,fig_del2, filename_del = request.POST.get('fig_data',None),request.POST.get('fig',None),request.POST.get('graph_key_value',None)
+            try:
+                figs.remove(fig_del2)
+                figs_bdd.remove(fig_del2)
+            except:
+                pass
+            msg = delete_graph(filename_del,username,project_name)
+            message=msg['message']
+            liste_graph_name, dic_graph = liste_graph(db, username, project_name)
 
+        request.session['figs'] = figs
+        request.session['figs_bdd']=figs_bdd
     return render(request,'viz_data.html',{'username': username,'project_name': project_name,'filename': filename,'methods':methods,
                                            'numerical_columns':numerical_columns, 'figs':figs, 'message':message,
-                                           'liste_graph_name' : liste_graph_name})
+                                           'liste_graph_name' : liste_graph_name,'figs_bdd':figs_bdd,'dic_graph':dic_graph})
 
 def info_df(df):
     ligne = df.shape[0]
@@ -343,17 +396,15 @@ def save_graph(filename,project_name,username,file):
     collection=db['Projet']
     if not test_file:
         try:
-            # Tenter de décoder en base64
             file_binary = base64.b64decode(file)
-            file = io.BytesIO(file_binary)  # Convertir en objet fichier
+            file = io.BytesIO(file_binary) 
         except Exception as e:
-            # Si ce n'est pas du base64, considérer que c'est du texte brut
             file = io.StringIO(file)
         file_id = fs.put(file, filename={'graph_file_name':filename,'username':username}, 
                             metadata={"username": username,'filename':filename,'project_name':project_name},
                             chunkSizeBytes=1048576
                         )
-        collection.update_one({'username':username,'nom_projet':project_name},{"$push": {"graphique": file_id}})
+        collection.update_one({'username':username,'nom_projet':project_name},{"$push": {"graphique": filename}})
         return 'graphique sauvegarder'
     else:
         return 'graphique deja existant'
@@ -364,11 +415,11 @@ def liste_graph(db, username, project_name):
     projet = collection.find_one({'username': username, 'nom_projet': project_name})
     if not projet or 'graphique' not in projet:
         return [], []     
-    graphs_id = projet['graphique']
+    graphs= projet['graphique']
     liste_graph_name, dic_graph = [], {}
     
-    for graph_id in graphs_id:
-        graph = fs.find_one({"_id": graph_id})
+    for filename in graphs:
+        graph = fs.find_one({"metadata.username": username,"metadata.project_name":project_name,"metadata.filename":filename})
         if graph:  
             graph_file_name = graph.metadata.get('filename') if graph.metadata else None
             liste_graph_name.append(graph_file_name)
@@ -385,7 +436,7 @@ def colonne_type(df):
 def afficher_df(df):
     columns=df.columns   
     dico_type=colonne_type(df)
-    rows = df.to_dict(orient='records')
+    rows = df.reset_index().to_dict(orient='records')
     return columns,dico_type,rows
 
 def delete_dataset(filename,username,project_name):
@@ -402,6 +453,22 @@ def delete_dataset(filename,username,project_name):
         dataset = user_project.get('data_set', [])
         dataset.remove(filename)
         collection.update_one({"username": username, "nom_projet": project_name},{"$set": {"data_set": dataset}})
+    return {"success": True, "message": "Dataset supprimé avec succès."}
+
+def delete_graph(filename,username,project_name):
+    db, client = get_db_mongo('Auto_ML','localhost',27017)
+    collection = db['Projet']
+    fs = gridfs.GridFS(db)
+    file = fs.find_one({"metadata.username": username,"metadata.project_name":project_name,"metadata.filename":filename})
+    if not file:
+        return None
+    else :
+        file_id=file._id
+        fs.delete(file_id)
+        user_project=collection.find_one({"username":username,"nom_projet":project_name})
+        graph = user_project.get('graphique', [])
+        graph.remove(filename)
+        collection.update_one({"username": username, "nom_projet": project_name},{"$set": {"graphique": graph}})
     return {"success": True, "message": "Dataset supprimé avec succès."}
 
 def delete_project(username,project_name):
@@ -559,5 +626,41 @@ def plot_1D(df, col, method):
     else:
         img_base64 = None  
     return img_base64
+
+def scatterplot(colonne_x,colonne_y,df):
+    fig, ax = plt.subplots(figsize=(10, 7))
+    ax.scatter(x=df[colonne_x], y=df[colonne_y], alpha=1, edgecolors='w',c='red')
+    ax.set_xlabel(colonne_x)
+    ax.set_ylabel(colonne_y)
+    ax.set_title(f"Scatterplot de {colonne_x} vs {colonne_y}")
+    plt.grid()
+    img = io.BytesIO()
+    plt.savefig(img, format='png')
+    img.seek(0)
+    img_base64 = base64.b64encode(img.getvalue()).decode('utf-8')
+    plt.close()
+    return img_base64
+
+def matrix_corr(df):
+    fig=plt.figure(figsize=(16, 6))
+    heatmap = sns.heatmap(df.corr(), vmin=-1, vmax=1, annot=True, cmap='BrBG')
+    heatmap.set_title('Correlation Heatmap', fontdict={'fontsize':18}, pad=12)
+    plt.grid()
+    img = io.BytesIO()
+    plt.savefig(img, format='png')
+    img.seek(0)
+    img_base64 = base64.b64encode(img.getvalue()).decode('utf-8')
+    plt.close()
+    return img_base64
+
+def func_outliers(df, colonne):
+    Q1 = df[colonne].quantile(0.25)
+    Q3 = df[colonne].quantile(0.75)
+    IQR = Q3 - Q1
+    
+    outliers=df[(df[colonne] < (Q1 - 1.5 * IQR)) | (df[colonne] > (Q3 + 1.5 * IQR))]
+    outliers_index=outliers.dropna(subset=colonne).index.tolist()
+    print(outliers_index)
+    return outliers_index
 
 

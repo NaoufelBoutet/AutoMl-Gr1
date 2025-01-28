@@ -140,6 +140,60 @@
             </section>
 
             <section>
+                <h1>Choisissez la colonne ou voir les outliers</h1>
+                <form method="post" action="{% url 'process_dataset' project_name=project_name filename=filename%}">
+                    {% csrf_token %}
+                    <label for="columns">Colonnes disponibles :</label>
+                    <select class="select_mult" id="columns_num2" name="columns" style="width: 100%;">
+                        {% for col in numerical_columns %}
+                            <option value="{{ col }}">{{ col }}</option>
+                        {% endfor %}
+                    </select>
+                    <button type="submit" name="action_process" value="action6">Valider</button>
+                </form>
+                <div>                   
+                    {% if dico_type_out and rows_out %}
+                    <div>
+                        <form id="selection-form" method="POST" action="{% url 'process_dataset' project_name=project_name filename=filename%}">
+                            {% csrf_token %}
+                            <input type="hidden" name="index_all" id="index_all" value="{% for row in rows_out %}{{ row|dict_get:'index' }}{% if not forloop.last %},{% endif %}{% endfor %}" />
+                            <table id="dataframe-table_2" class="df">
+                                <thead>
+                                    <tr>
+                                        <th>Suppression des lignes</th> <!-- Colonne pour les cases à cocher -->
+                                        {% for col in columns_out %}
+                                            <th>{{ col }} ({{ dico_type_out|dict_get:col }})</th>
+                                        {% endfor %}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for row in rows_out %}
+                                        <tr>
+                                            <td>
+                                                <!-- Case à cocher avec la valeur de l'index de la ligne -->
+                                                <input type="checkbox" name="selected_rows" value="{{ row|dict_get:'index' }}">
+                                            </td>
+                                            {% for col in columns_out %}
+                                                <td>{{ row|dict_get:col }}</td>
+                                            {% endfor %}
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                            <label>
+                                <input type="radio" name="selected_rows" value="all">
+                                Delete all lines
+                            </label><br>
+
+                            <!-- Bouton pour soumettre le formulaire -->
+                            <button type="submit" name="action_process" value="del_outlier">Valider la suppression des lignes</button>
+                        </form>
+                    </div>
+                    {%endif%}
+                    
+            </section>
+            
+            <section>
                 <form method="post" action="{% url 'process_dataset' project_name=project_name filename=filename%}">
                     {% csrf_token %}
                     <button type="submit" class="save-button" name="action_process" value="save_df" onclick="alert('Données sauvegardées !')">Sauvegarder</button>
