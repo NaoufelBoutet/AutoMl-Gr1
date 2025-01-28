@@ -216,13 +216,17 @@ def viz_data(request, project_name, filename):
     df = pd.read_csv(file_data, sep=',', on_bad_lines='warn')
     categorical_columns, numerical_columns = type_column(df)
     figs = request.session.get('figs', None) 
+    liste_graph_name, dic_graph = liste_graph(db, username, project_name)
     if figs is None:
         figs=[]   
     if request.method == 'POST':
         action = request.POST.get('action_process', None)
+        if action=='action0':
+            graph=request.POST.get('graph', None)
+            figs.append(dic_graph[graph])
         if action=='action1':
             col, method = request.POST.getlist('columns', None),request.POST.get('method', None)
-            if col==['all']:
+            if 'all' in col:
                 col=numerical_columns
             if col==[]:
                 message = "selectionner une colonne"
@@ -233,14 +237,14 @@ def viz_data(request, project_name, filename):
             fig_save = request.POST.get('fig_data',None)
             graph_name = filename + "__" + name
             message = save_graph(graph_name,project_name,username,figs[int(fig_save)])
-            print(message)
         if action =='del':
             fig_del = request.POST.get('fig_data',None)
             figs.pop(int(fig_del))
         request.session['figs'] = figs
 
     return render(request,'viz_data.html',{'username': username,'project_name': project_name,'filename': filename,'methods':methods,
-                                           'numerical_columns':numerical_columns, 'figs':figs, 'message':message})
+                                           'numerical_columns':numerical_columns, 'figs':figs, 'message':message,
+                                           'liste_graph_name' : liste_graph_name})
 
 def info_df(df):
     ligne = df.shape[0]
@@ -352,7 +356,28 @@ def save_graph(filename,project_name,username,file):
         return 'graphique sauvegarder'
     else:
         return 'graphique deja existant'
-        
+    
+def liste_graph(db, username, project_name):
+    fs = gridfs.GridFS(db)
+    collection = db['Projet']
+    projet = collection.find_one({'username': username, 'nom_projet': project_name})
+    if not projet or 'graphique' not in projet:
+        return [], []     
+    graphs_id = projet['graphique']
+    liste_graph_name, dic_graph = [], {}
+    
+    for graph_id in graphs_id:
+        graph = fs.find_one({"_id": graph_id})
+        if graph:  
+            graph_file_name = graph.metadata.get('filename') if graph.metadata else None
+            liste_graph_name.append(graph_file_name)
+            dic_graph[graph_file_name]=base64.b64encode(graph.read()).decode('utf-8')
+    return liste_graph_name, dic_graph
+
+
+
+
+
 
 def colonne_type(df):
     return {
