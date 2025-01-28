@@ -69,7 +69,10 @@ def project(request,project_name):
             fs = gridfs.GridFS(db)
             grid_out = fs.find_one({"metadata.username": username, 'metadata.filename': filename,'metadata.project_name':project_name})
             if grid_out: 
-                del request.session['df']
+                try:
+                    del request.session['df']
+                except:
+                    pass
                 return redirect('process_dataset',project_name,filename)
             else:
                 return render(request,'project.html',{'username':username,'project_name':project_name,'liste_dataset':liste_dataset,
@@ -103,7 +106,10 @@ def project(request,project_name):
             fs = gridfs.GridFS(db)
             grid_out = fs.find_one({"metadata.username": username, 'metadata.filename': filename,'metadata.project_name':project_name})
             if grid_out: 
-                del request.session['df']
+                try:
+                    del request.session['df']
+                except:
+                    pass
                 return redirect('viz_data',project_name,filename)
             else:
                 return render(request,'project.html',{'username':username,'project_name':project_name,'liste_dataset':liste_dataset,
@@ -214,7 +220,6 @@ def process_dataset(request, project_name, filename):
                 except Exception as e:
                     message = f'Erreur lors de la suppression de la ligne: {e}'
                     pass      
-            
         if action == 'save_df':
             response=save_dataset(filename,project_name,username,df)
         # Mettez à jour le DataFrame dans la session
