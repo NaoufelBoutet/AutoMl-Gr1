@@ -39,7 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'autoML',
     'auth_user',
-    'import_donnee'
+    'import_donnee',
+    "django_celery_results",
 ]
 
 MIDDLEWARE = [
@@ -136,3 +137,8 @@ MEDIA_ROOT = BASE_DIR / 'media'
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'  # ou autre backend de session
 SESSION_COOKIE_SECURE = True  # Assurez-vous que les cookies de session sont sécurisés en HTTPS
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+
+CELERY_BROKER_URL = "redis://localhost:6379/0"
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_BACKEND = "django-db"

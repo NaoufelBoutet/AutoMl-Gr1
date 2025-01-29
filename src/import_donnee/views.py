@@ -17,6 +17,12 @@ import seaborn as sns
 import base64
 import io
 import matplotlib
+from sklearn.model_selection import GridSearchCV
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.svm import SVC
+from sklearn.linear_model import LogisticRegression
+import warnings
+import random
 matplotlib.use('Agg')
 
 @login_required
@@ -111,6 +117,19 @@ def project(request,project_name):
                 except:
                     pass
                 return redirect('viz_data',project_name,filename)
+            else:
+                return render(request,'project.html',{'username':username,'project_name':project_name,'liste_dataset':liste_dataset,
+                                                        'filename':filename,})
+        elif action=="action5":
+            fs = gridfs.GridFS(db)
+            grid_out = fs.find_one({"metadata.username": username, 'metadata.filename': filename,'metadata.project_name':project_name})
+            if grid_out: 
+                try:
+                    del request.session['target']
+                    del request.session['features']
+                except:
+                    pass
+                return redirect('ML',project_name,filename)
             else:
                 return render(request,'project.html',{'username':username,'project_name':project_name,'liste_dataset':liste_dataset,
                                                         'filename':filename,})
@@ -305,6 +324,41 @@ def viz_data(request, project_name, filename):
                                            'numerical_columns':numerical_columns, 'figs':figs, 'message':message,
                                            'liste_graph_name' : liste_graph_name,'figs_bdd':figs_bdd,'dic_graph':dic_graph})
 
+@login_required
+def ML(request, project_name, filename):
+    username = request.user.username
+    db, client = get_db_mongo('Auto_ML', 'localhost', 27017)
+    fs = gridfs.GridFS(db)
+    grid_out = fs.find_one({"metadata.username": username, 'metadata.filename': filename, 'metadata.project_name': project_name})
+    file_data = BytesIO(grid_out.read())
+    df = pd.read_csv(file_data, sep=',', on_bad_lines='warn')
+    columns, dico_type, rows = afficher_df(df)
+    target = request.session.get('target', None) 
+    features = request.session.get('features', None)   
+    if request.method == 'POST':
+        action = request.POST.get('action_process', None)
+        if action=='target_features':
+            target = request.POST.get('target', None)
+            features = request.POST.getlist('features',None)
+            if target in features:
+                features.remove(str(target))
+            if 'all' in features:
+                features = columns.tolist().copy()
+                features.remove(target)
+        if action == 'macfine_learning':
+            if target is not None and features is not None and features!=[]:
+                if target not in features:
+                    features.append(target)
+                df = df[features]
+                X_train,Ytrain,Xtest, Ytest = split_data(df, target)
+                best_model, best_params = train_model(X_train,Ytrain, model_name="random_forest", params=None, use_grid_search=False, search_models=False, scoring="accuracy", cv=5)
+
+        request.session['target']=target
+        request.session['features']=features
+    return render(request,'ML.html',{'username': username,'project_name': project_name,'filename': filename,'columns':columns,'target':target,
+                                     'features':features})
+
+
 def info_df(df):
     ligne = df.shape[0]
     colonne = df.shape[1]
@@ -355,6 +409,7 @@ def magic_clean(df):
     for col in df.select_dtypes(include=['object']).columns:
         df[col] = df[col].astype(str).str.replace(r'[\s\x00-\x1F\x7F-\x9F]+', '', regex=True)
         df[col] = pd.to_numeric(df[col], errors='ignore')
+        df[col] = df[col].astype(str).str.replace(',', '.', regex=False)
         try :
             converted = pd.to_numeric(df[col], errors='raise')
             if converted.notna().all():
@@ -668,4 +723,91 @@ def func_outliers(df, colonne):
     print(outliers_index)
     return outliers_index
 
+def train_model(X_train, y_train, model_name="random_forest", params=None, use_grid_search=False, search_models=False, scoring="accuracy", cv=5):
+    """
+    Entraîne un modèle de Machine Learning avec ou sans GridSearch, en gérant les erreurs potentielles.
 
+    :param X_train: Features d'entraînement
+    :param y_train: Labels d'entraînement
+    :param model_name: Nom du modèle à utiliser (si search_models=False)
+    :param params: Dictionnaire des paramètres si non None et use_grid_search=False
+    :param use_grid_search: Si True, utilise GridSearch pour chercher les meilleurs hyperparamètres
+    :param search_models: Si True, GridSearch explore aussi plusieurs modèles
+    :param scoring: Métrique de scoring pour GridSearch (ex: "accuracy", "f1", "roc_auc", etc.)
+    :param cv: Nombre de folds pour la validation croisée
+    :return: Modèle entraîné et (si applicable) les meilleurs paramètres trouvés
+    """
+
+    models = {
+        "random_forest": RandomForestClassifier(),
+        "svm": SVC(),
+        "logistic_regression": LogisticRegression()
+    }
+    param_grid = {
+        "random_forest": {"n_estimators": [10, 50, 100], "max_depth": [None, 10, 20]},
+        "svm": {"C": [0.1, 1, 10], "kernel": ["linear", "rbf"]},
+        "logistic_regression": {"C": [0.1, 1, 10], "solver": ["liblinear"]}
+    }
+
+    # Pour stocker le meilleur modèle en cas de GridSearch sur plusieurs modèles
+    best_model = None
+    best_score = float('-inf')
+    best_params = None
+    models_tested = 0  # Compteur des modèles testés avec succès
+
+    # Désactiver les warnings inutiles
+    warnings.filterwarnings("ignore")
+    if search_models:
+            for model_key, model in models.items():
+                try:
+                    print(f"🔍 Optimisation du modèle: {model_key} avec scoring={scoring} et cv={cv}")
+                    grid_search = GridSearchCV(model, param_grid[model_key], cv=cv, scoring=scoring)
+                    grid_search.fit(X_train, y_train)
+
+                    models_tested += 1  # Incrémenter si le modèle a fonctionné
+
+                    if grid_search.bestscore > best_score:
+                        best_score = grid_search.bestscore
+                        best_model = grid_search.bestestimator
+                        best_params = grid_search.bestparams
+
+                except Exception as e:
+                    print(f"⚠️ Erreur avec le modèle {model_key}: {e}")
+
+            if best_model is None:
+                print("❌ Aucun modèle n'a réussi à s'entraîner.")
+            else:
+                print(f"✅ Meilleur modèle trouvé: {best_model} avec score={best_score}")
+
+            return best_model, best_params
+
+    else:
+        model = models.get(model_name)
+
+        if model is None:
+            print(f"❌ Modèle '{model_name}' non reconnu. Choisissez parmi {list(models.keys())}.")
+            return None, None
+
+        try:
+            if use_grid_search:
+                print(f"🔍 Recherche des meilleurs paramètres pour {model_name}...")
+                grid_search = GridSearchCV(model, param_grid[model_name], cv=cv, scoring=scoring)
+                grid_search.fit(X_train, y_train)
+                return grid_search.bestestimator, grid_search.bestparams
+
+            elif params:
+                model.set_params(**params)
+
+            print(f"🚀 Entraînement du modèle {model_name}...")
+            model.fit(X_train, y_train)
+            return model, params
+
+        except Exception as e:
+            print(f"⚠️ Erreur avec {model_name}: {e}")
+
+        return None, None
+
+def split_data(df, target_column, test_size=0.2, random_state=random.randint(10**11, 10**12 - 1)):
+    X = df.drop(columns=[target_column])
+    y = df[target_column]
+    return train_test_split(X, y, test_size=test_size, random_state=random_state)

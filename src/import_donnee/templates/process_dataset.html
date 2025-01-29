@@ -192,14 +192,14 @@
                     {%endif%}
                     
             </section>
-            
+        </br></br></br>
             <section>
                 <form method="post" action="{% url 'process_dataset' project_name=project_name filename=filename%}">
                     {% csrf_token %}
                     <button type="submit" class="save-button" name="action_process" value="save_df" onclick="alert('Données sauvegardées !')">Sauvegarder</button>
                 </form>
             </section>
-
+        </br></br></br>
             <section>
                 <h2>Aperçu du dataset</h2>
                 {% if dico_type and rows %}

@@ -36,6 +36,6 @@ urlpatterns = [
     path('home/creer_project/',import_donnee_views.creer_project, name='creer_project'),
     path('home/project/<str:project_name>/',import_donnee_views.project, name='project'),
     path('home/project/<str:project_name>/processing/<str:filename>/',import_donnee_views.process_dataset, name='process_dataset'),
-    path('home/project/<str:project_name>/data_viz/<str:filename>/',import_donnee_views.viz_data, name='viz_data')
-
+    path('home/project/<str:project_name>/data_viz/<str:filename>/',import_donnee_views.viz_data, name='viz_data'),
+    path('home/project/<str:project_name>/ML/<str:filename>/',import_donnee_views.ML, name='ML')
 ]

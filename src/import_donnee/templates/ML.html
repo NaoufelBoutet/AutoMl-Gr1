@@ -1,0 +1,73 @@
+<html>
+    <head>
+        <title>Espace result</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        {% load filters %}
+        {% load static %}
+        <link rel="stylesheet" href="{% static 'style.css' %}">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet">
+
+        <!-- Chargement de jQuery et Select2 -->
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+        <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+        <link rel="stylesheet" href="https://cdn.datatables.net/1.10.21/css/jquery.dataTables.min.css">
+
+    </head>
+    <body>
+
+        <nav class="nav_black">
+            <a href="{% url 'home' %}" class="a_nav_black">
+                <div class="nav_police_black">
+                    HOME
+                </div>
+            </a>
+            <a href="{% url 'perso'%}" class="a_nav_black">
+                <div class="nav_police_black">
+                    Espace Perso
+                </div>
+            </a>
+        </nav>
+
+        <main>
+        </br></br>
+            <section>
+                <h1>Choisir la target et les features</h1>
+                <form method="post" action="{% url 'ML' project_name=project_name filename=filename%}">
+                    {% csrf_token %}
+                    <label for="columns">Target :</label>
+                    <select class="select_mult" id="target" name="target" style="width: 100%;">
+                        {% for col in columns %}
+                            <option value="{{ col }}">{{ col }}</option>
+                        {% endfor %}
+                    </select>
+                    <label for="columns">Features :</label>
+                    <select class="select_mult" id="features" name="features" multiple="multiple" style="width: 100%;">
+                        <option value="all" selected>all other</option>
+                        {% for col in columns %}
+                            <option value="{{ col }}">{{ col }}</option>
+                        {% endfor %}
+                    </select>
+                    <button type="submit" name="action_process" value="target_features">Valider</button>
+                </form>
+            </section>
+            {%if target is not none and features is not none%}
+            <div>
+                La colonne target séléctioner est : {{target}}</br>
+                Les colonnes features séléctionner sont : {%for col in features%}{{col}}, {%endfor%}
+            </div>
+            {%endif%}
+        </main>
+        <script>
+             $(document).ready(function() {
+                $('.select_mult').select2({
+                    placeholder: "Sélectionnez des colonnes",
+                    allowClear: true
+                });
+            });
+
+        </script>
+    </body>
