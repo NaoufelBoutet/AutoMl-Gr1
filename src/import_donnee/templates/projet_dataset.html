@@ -119,9 +119,15 @@
                 <strong>Liste des datasets :</strong>
             </label>
             <select name="selected_dataset" id="selected_dataset" required style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ccc;">
-                <option value="" disabled {% if not dataset_name %}selected{% endif %}>Sélectionner un dataset à afficher</option>
+                <!-- Option par défaut désactivée -->
+                <option value="" disabled {% if not dataset_name %}selected{% endif %}>
+                    Sélectionner un dataset à afficher
+                </option>
+                <!-- Boucle sur les datasets -->
                 {% for dataset in dataset_names %}
-                    <option value="{{ dataset }}" {% if dataset == dataset_name %}selected{% endif %}>{{ dataset }}</option>
+                    <option value="{{ dataset }}" {% if dataset_name == dataset %}selected{% endif %}>
+                        {{ dataset }}
+                    </option>
                 {% endfor %}
             </select>
             <input type="hidden" name="dataset_name" value="{{ dataset }}">
@@ -139,11 +145,43 @@
                 <button type="submit" name="action" value="action4" class="btn btn-success">
                     Visualisation des données
                 </button>
+                <button type="submit" name="action" value="action6" class="btn btn-success">
+                    Modélisation
+                </button>
             </div>
         </fieldset>
     </form>
+
+    {% if outlier_info %}
+<div class="project-details">
+    <h1>Informations sur les Outliers</h1>
+    
+    <div class="table-container">
+        <table id="outliers-table">
+            <thead>
+                <tr>
+                    <th>Colonne</th>
+                    <th>Nombre d'Outliers</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in outlier_info %}
+                    <tr>
+                        <td style="text-align: center;">{{ item.column }}</td>
+                        <td style="text-align: center;">{{ item.outliers_count }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
+{% endif %}
 </div>
 {% if dataset_name %}
+{% if ligne %}
+
 <div style="margin-top: 20px;" class="project-details">
     <h2>Informations sur le Dataset : {{ dataset_name }}</h2>
     <ul>
@@ -165,6 +203,7 @@
     </div>
 </div>
 {% endif %}
+{% endif %}
 
 
 <script>
@@ -175,6 +214,15 @@
         lengthMenu: [5, 10, 25, 50, 75, 100]
     });
 });
+
+
+    $(document).ready(function() {
+        $('#outliers-table').DataTable({
+            paging: true,
+            lengthMenu: [10, 25, 50, 75, 100]
+        });
+    });
+   
 </script>
 </body>
 </html>

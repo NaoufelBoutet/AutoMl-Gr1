@@ -183,6 +183,67 @@
     </div>
     <div class="project-details">
         <div class="project-content">
+            <h2 style="text-align: center;">Gestion des Outliers</h2>
+            <form method="post" action="{% url 'imputation' %}">
+                {% csrf_token %}
+                <input type="hidden" name="project_name" value="{{ project_name }}">
+                <input type="hidden" name="dataset_name" value="{{ dataset_name }}">
+    
+                <label for="outlier_column">Choisissez une colonne avec des outliers:</label>
+                <select id="outlier_column" name="outlier_column" required>
+                    <option value="" disabled selected>Sélectionnez une colonne</option>
+                    {% for info in outlier_info %}
+                        <option value="{{ info.column }}">
+                            {{ info.column }} (Outliers: {{ info.outliers_count }})
+                        </option>
+                    {% endfor %}
+                </select><br><br>
+    
+                <!-- Affichage des indices des outliers -->
+                <div id="outlier_indices_container" style="display: none;">
+                    <label for="outlier_indices">Indices des lignes avec des outliers:</label>
+                    <input type="text" id="outlier_indices" name="outlier_indices" readonly>
+                </div><br>
+    
+                <!-- Choisir une action à réaliser -->
+                <label for="outlier_action">Action à réaliser:</label>
+                <select id="outlier_action" name="outlier_action" required>
+                    <option value="" disabled selected>Sélectionnez une action</option>
+                    <option value="drop">Supprimer les outliers</option>
+                    <option value="replace">Remplacer les outliers</option>
+                    <option value="impute">Imputer les outliers</option>
+                </select><br><br>
+    
+                <!-- Afficher les champs de remplacement si l'action choisie est "Replace" -->
+                <div id="replace-value-container" style="display: none;">
+                    <label for="replace_value">Valeur à remplacer:</label>
+                    <input type="text" id="replace_value" name="replace_value" required><br><br>
+                    <label for="new_value">Nouvelle valeur:</label>
+                    <input type="text" id="new_value" name="new_value" required>
+                </div>
+    
+                <!-- Afficher les stratégies d'imputation si l'action choisie est "Impute" -->
+                <div id="impute-strategy-container" style="display: none;">
+                    <label for="impute_strategy">Stratégie d'imputation:</label>
+                    <select id="impute_strategy" name="impute_strategy" required>
+                        <option value="" disabled selected>Sélectionnez une stratégie d'imputation</option>
+                        <option value="mean">Moyenne</option>
+                        <option value="median">Médiane</option>
+                        <option value="mode">Mode</option>
+                    </select><br><br>
+                </div>
+    
+                <div class="button-group">
+                    <button type="submit" name="action" value="action_outliers">Exécuter</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+  
+    
+    <div class="project-details">
+        <div class="project-content">
             <h2 style="text-align: center;">Remplacement de valeurs spécifiques</h2>
             <form method="post" action="{% url 'imputation' %}">
                 {% csrf_token %}
@@ -354,6 +415,29 @@
                 allowClear: true
             });
         });
+        document.addEventListener('DOMContentLoaded', function() {
+    var outlierActionSelect = document.getElementById('outlier_action');
+    var replaceValueContainer = document.getElementById('replace-value-container');
+    var imputeStrategyContainer = document.getElementById('impute-strategy-container');
+    
+    outlierActionSelect.addEventListener('change', function() {
+        var selectedAction = this.value;
+
+        // Masquer les deux conteneurs
+        replaceValueContainer.style.display = 'none';
+        imputeStrategyContainer.style.display = 'none';
+
+        // Afficher la section appropriée en fonction de l'action choisie
+        if (selectedAction === 'replace') {
+            replaceValueContainer.style.display = 'block';  // Afficher le champ de remplacement
+        } else if (selectedAction === 'impute') {
+            imputeStrategyContainer.style.display = 'block';  // Afficher les stratégies d'imputation
+        }
+    });
+});
+    
+
+    
     </script>
 </body>
 </html>

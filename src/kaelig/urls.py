@@ -38,32 +38,7 @@ urlpatterns = [
     path('dataset_info/', import_donnee_views.dataset_info, name='dataset_info'),
     path('dataset_cleanning/', import_donnee_views.cleanning, name='cleanning'),
     path('imputation/', import_donnee_views.imputation, name='imputation'),
+    path('visualisation/', import_donnee_views.visualisation, name='visualisation'),
+    path('modelisation/', import_donnee_views.modelisation, name='modelisation'),
     
 ]
-# path('login/',auth_user_views.show_login, name='show_login'),
-#     path('sign/', auth_user_views.show_sign, name='show_sign'),
-#     path('users/', auth_user_views.sign_in, name='sign_in'),
-#     path('connect/',auth_user_views.login, name='login'),
-#     path('username/<str:username>/',autoML_views.espace_personel,name='perso'),
-#     path('sucess/',auth_user_views.success, name='success'),    
-#     path('username/<str:username>/import_data_home/', import_donnee_views.home_data, name='home_data'),
-#     path('username/<str:username>/upload_csv/',import_donnee_views.upload_csv,name='upload_csv'),
-#     path('username/<str:username>/result_csv/',import_donnee_views.result_csv,name='result_csv'),
-#     path('username/<str:username>/browse_file/',import_donnee_views.browse_file, name='browse_file'),
-#     path('username/<str:username>/filename/<str:filename>',import_donnee_views.read_csv,name='read_csv'),
-#     path('username/<str:username>/filename/<str:filename>/html',import_donnee_views.df_to_html,name='df_to_html')
-
-
-
-# urlpatterns = [
-#     path('admin/', admin.site.urls),
-#     path('connexion/', authviews.connexion , name='connexion'),
-#     path('inscription/', authviews.inscription , name='inscription'),
-#     path('', staticsviews.accueil , name='accueil'),
-#     path('accueil/', staticsviews.accueil , name='accueil'),
-#     path('deconnexion/', authviews.deconnexion , name='deconnexion'),
-#     path('afficher_dataset/', staticsviews.afficher_dataset, name='afficher_dataset'),
-#     path('supprimer_dataset/', staticsviews.supprimer_dataset, name='supprimer_dataset'),
-#     path('data_cleanning/', staticsviews.nettoyage_dataset, name='nettoyage_dataset')
-    
-# ]
