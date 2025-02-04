@@ -253,3 +253,11 @@
 .save-button:active {
     background-color: #388e3c; /* Couleur encore plus foncée lors du clic */
 }
+
+#training-status {
+    display: block !important;
+    visibility: visible !important;
+    background: rgba(0, 255, 0, 0.2); /* Juste pour voir si elle apparaît */
+    padding: 10px;
+    border: 1px solid green;
+}

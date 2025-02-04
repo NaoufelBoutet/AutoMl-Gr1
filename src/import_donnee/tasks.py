@@ -1,12 +1,9 @@
-# ml_app/tasks.py
-
 from celery import shared_task
-import time
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.svm import SVC
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import GridSearchCV
-import warnings
+import time
 
 @shared_task(bind=True)
 def train_model_task(self, X_train, y_train, model_name="random_forest", params=None, use_grid_search=False, search_models=False, scoring="accuracy", cv=5):
@@ -21,15 +18,21 @@ def train_model_task(self, X_train, y_train, model_name="random_forest", params=
         "logistic_regression": {"C": [0.1, 1, 10], "solver": ["liblinear"]}
     }
     
-    best_model = None
-    best_score = float('-inf')
-    best_params = None
-    warnings.filterwarnings("ignore")
+    total_steps = len(models) if search_models else 1
+    current_step = 0
 
     if search_models:
-        for i, (model_key, model) in enumerate(models.items()):
+        best_model = None
+        best_score = float('-inf')
+        best_params = None
+
+        for model_key, model in models.items():
+            current_step += 1
+            percent_complete = int((current_step / total_steps) * 100)
+
+            self.update_state(state="PROGRESS", meta={"step": current_step, "total_steps": total_steps, "percent": percent_complete})
+
             try:
-                self.update_state(state="PROGRESS", meta={"current_step": i+1, "total_steps": len(models), "model": model_key})
                 grid_search = GridSearchCV(model, param_grid[model_key], cv=cv, scoring=scoring)
                 grid_search.fit(X_train, y_train)
 
@@ -50,15 +53,18 @@ def train_model_task(self, X_train, y_train, model_name="random_forest", params=
 
         try:
             if use_grid_search:
-                self.update_state(state="PROGRESS", meta={"message": f"Recherche des meilleurs paramètres pour {model_name}..."})
+                self.update_state(state="PROGRESS", meta={"message": f"Recherche des meilleurs paramètres pour {model_name}...", "percent": 50})
                 grid_search = GridSearchCV(model, param_grid[model_name], cv=cv, scoring=scoring)
                 grid_search.fit(X_train, y_train)
+                
                 return {"status": "COMPLETED", "best_model": str(grid_search.best_estimator_), "best_params": grid_search.best_params_}
 
             elif params:
                 model.set_params(**params)
-
             model.fit(X_train, y_train)
+            
+            self.update_state(state="PROGRESS", meta={"message": "Modèle entraîné, finalisation...", "percent": 90})
+            time.sleep(20)  # Simulation d'une dernière étape
             return {"status": "COMPLETED", "best_model": str(model), "params": params}
 
         except Exception as e:

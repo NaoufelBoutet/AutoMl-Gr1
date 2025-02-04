@@ -37,5 +37,7 @@ urlpatterns = [
     path('home/project/<str:project_name>/',import_donnee_views.project, name='project'),
     path('home/project/<str:project_name>/processing/<str:filename>/',import_donnee_views.process_dataset, name='process_dataset'),
     path('home/project/<str:project_name>/data_viz/<str:filename>/',import_donnee_views.viz_data, name='viz_data'),
-    path('home/project/<str:project_name>/ML/<str:filename>/',import_donnee_views.ML, name='ML')
+    path('home/project/<str:project_name>/ML/<str:filename>/',import_donnee_views.ML, name='ML'),
+    path('get_task_progress/<task_id>/', import_donnee_views.get_task_progress, name='get_task_progress'),
+    path('clear_task_id/', import_donnee_views.clear_task_id, name="clear_task_id")
 ]

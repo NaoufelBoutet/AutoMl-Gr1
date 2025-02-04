@@ -23,12 +23,21 @@ from sklearn.svm import SVC
 from sklearn.linear_model import LogisticRegression
 import warnings
 import random
+from django.http import JsonResponse
+from celery.result import AsyncResult
+from .tasks import train_model_task
+import json
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+
+
 matplotlib.use('Agg')
 
 @login_required
 def home_data(request):
     username=request.user.username
-    return render(request, 'home_data.html',{'username' : username})
+    task_id = request.session.get("task_id", None)
+    return render(request, 'home_data.html',{'username' : username,"task_id": task_id})
 
 @login_required
 def liste_project(request):
@@ -36,6 +45,7 @@ def liste_project(request):
     id = request.user.id   
     list_project = get_project_by_user(username, id)  
     print("1:",list_project)
+    task_id = request.session.get("task_id", None)
     if request.method == 'POST':
         action = request.POST.get('action_liste_prj', None)
         projet = request.POST.get('projet', None)
@@ -43,7 +53,7 @@ def liste_project(request):
             delete_project(username, projet)  
             list_project = get_project_by_user(username, id)  
             print("2",list_project)
-    return render(request, 'liste_project.html', {'username': username, 'projects': list_project})
+    return render(request, 'liste_project.html', {'username': username, 'projects': list_project,"task_id": task_id})
 
 @login_required
 def project(request,project_name):
@@ -51,10 +61,11 @@ def project(request,project_name):
     db, client = get_db_mongo('Auto_ML','localhost',27017)
     collection = db['Projet']
     projet=collection.find_one({'username':username,'nom_projet':project_name})
+    task_id = request.session.get("task_id", None)
     if not projet :
         id = request.user.id   
         list_project = get_project_by_user(username, id) 
-        return render(request, 'liste_project.html', {'username': username, 'projects': list_project})
+        return render(request, 'liste_project.html', {'username': username, 'projects': list_project,"task_id": task_id})
     liste_dataset=projet['data_set']
     if request.method == 'POST':
         filename = request.POST.get('filename', None)
@@ -70,7 +81,7 @@ def project(request,project_name):
                 columns=df.columns
             return render(request,'project.html',{'username':username,'project_name':project_name,'liste_dataset':liste_dataset,
                                                 'filename':filename,'dico_info':dico_info,'table_html':table_html,'dico_type':dico_type,
-                                                'df':df,'rows':rows,'columns':columns})
+                                                'df':df,'rows':rows,'columns':columns,"task_id": task_id})
         elif action=="action1" :
             fs = gridfs.GridFS(db)
             grid_out = fs.find_one({"metadata.username": username, 'metadata.filename': filename,'metadata.project_name':project_name})
@@ -82,7 +93,7 @@ def project(request,project_name):
                 return redirect('process_dataset',project_name,filename)
             else:
                 return render(request,'project.html',{'username':username,'project_name':project_name,'liste_dataset':liste_dataset,
-                                                        'filename':filename,})
+                                                        'filename':filename,"task_id": task_id})
         elif action=="action2":
             fs = gridfs.GridFS(db)
             grid_out = fs.find_one({"metadata.username": username, 'metadata.filename': filename,'metadata.project_name':project_name})
@@ -98,16 +109,16 @@ def project(request,project_name):
                 columns=df.columns
                 return render(request,'project.html',{'username':username,'project_name':project_name,'liste_dataset':liste_dataset,
                                                 'filename':filename,'dico_info':dico_info,'table_html':table_html,'dico_type':dico_type,
-                                                'df':df,'rows':rows,'columns':columns})
+                                                'df':df,'rows':rows,'columns':columns,"task_id": task_id})
             else:
                 return render(request,'project.html',{'username':username,'project_name':project_name,'liste_dataset':liste_dataset,
-                                                        'filename':filename,})
+                                                        'filename':filename,"task_id": task_id})
         elif action=="action3":
             print(filename)
             msg=delete_dataset(filename,username,project_name)
             projet=collection.find_one({'username':username,'nom_projet':project_name})
             liste_dataset=projet['data_set']
-            return render(request,'project.html',{'username':username,'project_name':project_name,'liste_dataset':liste_dataset})
+            return render(request,'project.html',{'username':username,'project_name':project_name,'liste_dataset':liste_dataset,"task_id": task_id})
         elif action=="action4":
             fs = gridfs.GridFS(db)
             grid_out = fs.find_one({"metadata.username": username, 'metadata.filename': filename,'metadata.project_name':project_name})
@@ -119,7 +130,7 @@ def project(request,project_name):
                 return redirect('viz_data',project_name,filename)
             else:
                 return render(request,'project.html',{'username':username,'project_name':project_name,'liste_dataset':liste_dataset,
-                                                        'filename':filename,})
+                                                        'filename':filename,"task_id": task_id})
         elif action=="action5":
             fs = gridfs.GridFS(db)
             grid_out = fs.find_one({"metadata.username": username, 'metadata.filename': filename,'metadata.project_name':project_name})
@@ -132,12 +143,14 @@ def project(request,project_name):
                 return redirect('ML',project_name,filename)
             else:
                 return render(request,'project.html',{'username':username,'project_name':project_name,'liste_dataset':liste_dataset,
-                                                        'filename':filename,})
+                                                        'filename':filename,"task_id": task_id})
+
     else :
-        return render(request,'project.html',{'username':username,'project_name':project_name,'liste_dataset':liste_dataset})
+        return render(request,'project.html',{'username':username,'project_name':project_name,'liste_dataset':liste_dataset,"task_id": task_id})
 
 @login_required
 def upload_csv(request,project_name):
+    task_id = request.session.get("task_id", None)
     username=request.user.username
     db,client = get_db_mongo('Auto_ML','localhost',27017)
     collection = db['Projet']
@@ -184,6 +197,7 @@ def creer_project(request):
 
 @login_required
 def process_dataset(request, project_name, filename):
+    task_id = request.session.get("task_id", None)
     methods, method_col, msg, liste_encod_cat,liste_encod_num= ['drop', 'mode', 'median', 'mean'], {'drop': 'columns', 'mode': 'numerical_columns', 'mean': 'numerical_columns', 'median': 'numerical_columns'},None,['One Hot','Label'],['Standard','Min-Max','Robust']
     username = request.user.username
     db, client = get_db_mongo('Auto_ML', 'localhost', 27017)
@@ -249,10 +263,12 @@ def process_dataset(request, project_name, filename):
     return render(request, 'process_dataset.html', {'username': username,'project_name': project_name,'columns': columns,'methods': methods,
         'categorical_columns': categorical_columns,'numerical_columns': numerical_columns,'df': df,'dico_type': dico_type,'rows': rows,
         'filename': filename,'method_col': method_col,'a': a,"dico_info":dico_info,"message":msg,'encoding_methods_cat':liste_encod_cat,
-        'encoding_methods_num':liste_encod_num,'outliers':outliers,'columns_out':columns_out, 'dico_type_out':dico_type_out, 'rows_out':rows_out})
+        'encoding_methods_num':liste_encod_num,'outliers':outliers,'columns_out':columns_out, 'dico_type_out':dico_type_out, 'rows_out':rows_out,
+        "task_id": task_id})
 
 @login_required
 def viz_data(request, project_name, filename):
+    task_id = request.session.get("task_id", None)
     methods, message= ['Boxplot','Histogramme'], None 
     username = request.user.username
     db, client = get_db_mongo('Auto_ML', 'localhost', 27017)
@@ -321,11 +337,12 @@ def viz_data(request, project_name, filename):
         request.session['figs'] = figs
         request.session['figs_bdd']=figs_bdd
     return render(request,'viz_data.html',{'username': username,'project_name': project_name,'filename': filename,'methods':methods,
-                                           'numerical_columns':numerical_columns, 'figs':figs, 'message':message,
+                                           'numerical_columns':numerical_columns, 'figs':figs, 'message':message,"task_id": task_id,
                                            'liste_graph_name' : liste_graph_name,'figs_bdd':figs_bdd,'dic_graph':dic_graph})
 
 @login_required
 def ML(request, project_name, filename):
+    task_id = request.session.get("task_id", None)
     username = request.user.username
     db, client = get_db_mongo('Auto_ML', 'localhost', 27017)
     fs = gridfs.GridFS(db)
@@ -345,19 +362,40 @@ def ML(request, project_name, filename):
             if 'all' in features:
                 features = columns.tolist().copy()
                 features.remove(target)
-        if action == 'macfine_learning':
+        if action == 'machine_learning':
             if target is not None and features is not None and features!=[]:
                 if target not in features:
                     features.append(target)
                 df = df[features]
-                X_train,Ytrain,Xtest, Ytest = split_data(df, target)
-                best_model, best_params = train_model(X_train,Ytrain, model_name="random_forest", params=None, use_grid_search=False, search_models=False, scoring="accuracy", cv=5)
+                X_train,X_test,Y_train, Y_test = split_data(df, target)
+                task = train_model_task.apply_async(args=[X_train.values.tolist(), Y_train.values.tolist()])
 
+                request.session['task_id'] = task.id
+                return redirect('ML',project_name, filename)
+                
         request.session['target']=target
         request.session['features']=features
     return render(request,'ML.html',{'username': username,'project_name': project_name,'filename': filename,'columns':columns,'target':target,
-                                     'features':features})
+                                     'features':features,"task_id": task_id})
 
+def get_task_progress(request, task_id):
+    result = AsyncResult(task_id)
+    response_data = {
+        "state": result.state,
+        "meta": result.info if result.info else {}
+    }
+    return JsonResponse(response_data)
+
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+
+@csrf_exempt
+def clear_task_id(request):
+    if request.method == "POST":
+        request.session.pop("task_id", None)  # Supprime task_id de la session
+        return JsonResponse({"status": "success"})
+    return JsonResponse({"status": "error"}, status=400)
+        
 
 def info_df(df):
     ligne = df.shape[0]
@@ -807,7 +845,7 @@ def train_model(X_train, y_train, model_name="random_forest", params=None, use_g
 
         return None, None
 
-def split_data(df, target_column, test_size=0.2, random_state=random.randint(10**11, 10**12 - 1)):
+def split_data(df, target_column, test_size=0.2, random_state=random.randint(10**4, 10**6 - 1)):
     X = df.drop(columns=[target_column])
     y = df[target_column]
     return train_test_split(X, y, test_size=test_size, random_state=random_state)
