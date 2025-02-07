@@ -113,7 +113,7 @@
                         {%endif%}
                         <button type="submit" name="action_process" value="del">Supprimer le graphique</button>
                         {%if fig in figs_bdd%}
-                            <button type="button" id="del-bdd-button-{{ forloop.counter0 }}" onclick="handleDelBddClick({{ forloop.counter0 }})">Supprimer le graphique de la BDD</button>
+                            <button type="button" id="del-bdd-button-{{ forloop.counter0 }}" onclick="handleDelBddClick('{{ forloop.counter0 }}')">Supprimer le graphique de la BDD</button>
                         {%endif%}
                         <img src="data:image/png;base64,{{ fig }}" alt="Graphique" />
                     </form>

@@ -368,7 +368,7 @@ def ML(request, project_name, filename):
                     features.append(target)
                 df = df[features]
                 X_train,X_test,Y_train, Y_test = split_data(df, target)
-                task = train_model_task.apply_async(args=[X_train.values.tolist(), Y_train.values.tolist()])
+                task = train_model_task.apply_async(args=[X_train.to_dict(orient='index'), Y_train.values.tolist()])
 
                 request.session['task_id'] = task.id
                 return redirect('ML',project_name, filename)
