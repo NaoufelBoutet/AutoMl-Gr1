@@ -23,7 +23,7 @@ class User_project(models.Model):
     def add_project(self, project_name):
         """Créer un nouveau projet et l'associer à l'utilisateur"""
         project = ProjectsDatasets.objects.create(user_project=self)
-        self.projects[str(project.id)] = project_name
+        self.projects[str(project_name)] = project.id
         self.save()
         return project
 

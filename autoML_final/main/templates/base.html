@@ -1,0 +1,79 @@
+<html>
+    <head>
+        <title>Espace import data</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        {% load static %}
+        {% load filters %}
+
+        <link rel="stylesheet" href="{% static 'style.css' %}">
+        <script src="{% static 'scripts.js' %}"></script>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet">
+
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+        <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    </head>
+<body>
+    {% block content %}
+    {% endblock %}
+    <div id="training-status">
+        <p id="status-message">En attente de l'entraînement...</p>
+        <progress id="progress-bar" value="0" max="100"></progress>
+    </div>
+    <!-- Le JavaScript pour la mise à jour de la notification -->
+    <script>
+        let intervalId;  // Stocke l'intervalle pour l'arrêter plus tard
+    
+        function checkProgress(taskId) {
+            fetch(`/get_task_progress/${taskId}/`)
+                .then(response => response.json())
+                .then(data => {
+                    console.log("Données reçues :", data);
+                    const statusMessage = document.getElementById('status-message');
+                    const progressBar = document.getElementById('progress-bar');
+    
+                    if (data.state === "PROGRESS") {
+                        let percent = data.meta.percent || 0;
+                        statusMessage.innerText = `En cours... ${percent}%`;
+                        progressBar.value = percent;
+                    } else if (data.state === "SUCCESS") {
+                        statusMessage.innerText = "Entraînement terminé !";
+                        progressBar.value = 100;
+                        clearInterval(intervalId);  // Stoppe la boucle de requêtes
+                        removeTaskIdFromSession();  // Supprime le task_id
+                    } else if (data.state === "FAILURE") {
+                        statusMessage.innerText = "Erreur lors de l'entraînement.";
+                        progressBar.value = 0;
+                        clearInterval(intervalId);
+                        removeTaskIdFromSession();
+                    }
+                })
+                .catch(error => {
+                    console.error("Erreur :", error);
+                    clearInterval(intervalId);  // Stoppe en cas d'erreur
+                });
+        }
+    
+        function removeTaskIdFromSession() {
+            fetch('/clear_task_id/', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => console.log("Task ID supprimé :", data))
+                .catch(error => console.error("Erreur suppression task_id :", error));
+        }
+    
+        document.addEventListener("DOMContentLoaded", function() {
+            const taskId = "{{ task_id|default:'' }}".trim();
+            
+            if (taskId) {
+                intervalId = setInterval(() => checkProgress(taskId), 2000);
+            } else {
+                console.log("Aucune tâche en cours.");
+            }
+        });
+    </script>
+    
+</body>
+</html>

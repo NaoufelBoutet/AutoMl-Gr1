@@ -3,6 +3,11 @@ from utils import get_db_mongo
 from django.contrib.auth.decorators import login_required
 import pandas as pd
 from pymongo import MongoClient
+from django.contrib.auth import get_user_model
+from .models import User_project, ProjectsDatasets
+
+# Utilisation de get_user_model pour obtenir le modèle utilisateur correct
+User = get_user_model()
 
 # Create your views here.
 def home(request):
@@ -12,6 +17,32 @@ def home(request):
 def espace_personel(request):
     username=request.user.username
     return render(request, 'espace_perso.html',{'username': username})
+
+@login_required
+def liste_project(request):
+    username = request.user.username
+    user = User.objects.get(username=username)  # Trouver l'utilisateur avec ID 1 (par exemple)
+    dico_project = User_project.objects.get(user=user).projects
+    if request.method == 'POST':
+        action = request.POST.get('action_liste_prj', None)
+        projet = request.POST.get('projet', None)
+        if action == 'action1':
+            #delete_project(username, projet)  
+            #list_project = get_project_by_user(username, id)  
+             #print("2",list_project)
+             pass
+    return render(request, 'liste_project.html', {'username': username, 'projects': dico_project,})
+
+@login_required
+def creer_project(request):
+    username=request.user.username
+    user = User.objects.get(username=username)
+    user_projects = User_project.objects.get(user=user)
+    if request.method == 'POST':
+        nom_projet = request.POST.get("nom_projet")
+        if nom_projet: 
+            user_projects.projects.
+    return redirect('liste_project')
 
 class Df_perso:
     def __init__(self,df):

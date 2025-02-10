@@ -50,7 +50,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'main',
-    'auth_user'
+    'auth_user',
+    'debug_toolbar'
 ]
 
 MIDDLEWARE = [
@@ -61,6 +62,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'debug_toolbar.middleware.DebugToolbarMiddleware'
 ]
 
 ROOT_URLCONF = 'autoML_final.urls'
@@ -96,22 +98,10 @@ DATABASES = {
         'HOST': os.getenv("HOST_PG"),
         'PORT': int(os.getenv("PORT_PG", 5432)),
         'OPTIONS': {
-            'options': '-c search_path=auth_schema,public',
-        },
-    },
-    'user_data': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv("NAME_PG"),
-        'USER': os.getenv("USER_PG"),
-        'PASSWORD': os.getenv("PASSWORD_PG"),
-        'HOST': os.getenv("HOST_PG"),
-        'PORT': int(os.getenv("PORT_PG", 5432)),
-        'OPTIONS': {
             'options': '-c search_path=user_data_schema,public',
         },
-    },
+    }
 }
-DATABASE_ROUTERS = ['autoML_final.db_router.AuthRouter']
 
 
 # Password validation
@@ -149,6 +139,9 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 STATIC_URL = 'static/'
+STATICFILES_DIRS = [
+    BASE_DIR / "static",
+]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
@@ -159,6 +152,13 @@ SESSION_ENGINE = 'django.contrib.sessions.backends.db'  # ou autre backend de se
 SESSION_COOKIE_SECURE = True  # Assurez-vous que les cookies de session sont sécurisés en HTTPS
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
-AUTH_USER_MODEL = 'auth_user.CustomUser'  # Remplace 'ton_app' par le nom de ton application
+AUTH_USER_MODEL = 'auth_user.CustomUser'
+ # Remplace 'ton_app' par le nom de ton application
+
+INTERNAL_IPS = [
+    '127.0.0.1',  # ou l'IP de ton serveur local
+    'localhost',  # Assure-toi que localhost est aussi inclus
+]
+
 
 

@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+{% block content %}
+{% load filters %}
+{% load static %}
+<script src="{% static 'scripts.js' %}"></script>
+<link rel="stylesheet" href="{% static 'style.css' %}">
+    <body>
+        <nav class="nav_black">
+            <a href="{% url 'home' %}" class="a_nav_black">
+                <div class="nav_police_black">
+                HOME
+                </div>
+            </a>
+            <a href="{% url 'perso'%}" class="a_nav_black">
+                <div class="nav_police_black">
+                Espace Perso
+                </div>
+            </a>
+            </nav>
+        <h1>Page pour créer un projet</h1>
+
+        <h1>Page pour regarder les projet</h1>
+        <div >
+            {% if projects %}
+            <ul>
+                {% for project in projects %}
+                    <div class="card-container">
+                        <div class="card">
+                            <header class="card-header header-img">
+                                <img src="https://bigmedia.bpifrance.fr/sites/default/files/styles/dossier_page/public/2024-08/Comment%20int%C3%A9grer%20l%27IA%20dans%20votre%20entreprise%20en%208%20%C3%A9tapes.png.webp?itok=UR-fuYVr" alt="">
+                                <p class="header-title">{{ project.nom_projet }}</p>
+                            </header>
+                            <div class="card-body"></div>
+                            <div class="card-footer">
+                                <button class="btn" onclick="window.location.href='{% url 'project' project_name=project.nom_projet %}'">Go</button>
+                                <button class="btn delete-btn" data-projet="{{ project.nom_projet }}" name="action_liste_prj" value="action1">Delete le projet</button>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </ul>
+            {% else %}
+                <p>Aucun projet trouvé.</p>
+            {% endif %}
+        </div>
+    <script>
+    document.querySelectorAll(".delete-btn").forEach(function(button) {
+        button.addEventListener("click", function() {
+        // Afficher la boîte de confirmation
+        var confirmation = confirm("Êtes-vous sûr de vouloir supprimer ce projet ?");
+        
+        if (confirmation) {
+            // Récupérer la valeur de 'name' et 'value' du bouton
+            var actionName = this.getAttribute("name"); // Récupère le 'name' du bouton
+            var actionValue = this.getAttribute("value"); // Récupère le 'value' du bouton
+            var projetName = this.getAttribute("data-projet"); // Récupère le nom du projet avec data-projet
+            var csrfToken = "{{ csrf_token }}";  // CSRF Token pour la sécurité
+    
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", "{% url 'liste_project' %}", true);
+            xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+            xhr.setRequestHeader("X-CSRFToken", csrfToken);
+    
+            xhr.onreadystatechange = function() {
+            if (xhr.readyState == 4 && xhr.status == 200) {
+                // Quand la réponse est reçue avec succès
+                document.getElementById("project-info").innerHTML = xhr.responseText;
+    
+                // Recharge la page après l'exécution
+                location.reload(); // Recharge la page après l'exécution de la fonction
+            }
+            };
+    
+            // Envoyer les données (ici le nom du projet et la valeur de l'action)
+            xhr.send("action_liste_prj=" + actionValue + "&projet=" + projetName);  // Envoyer action et projet dans la requête
+        } else {
+            // Si l'utilisateur a annulé, ne rien faire
+            console.log("L'utilisateur a annulé l'action.");
+        }
+        });
+    });
+    </script>
+    </body>
+{% endblock %}

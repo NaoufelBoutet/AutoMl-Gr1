@@ -2,12 +2,14 @@ from django.shortcuts import render
 
 # Create your views here.
 from django.shortcuts import render, redirect
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.contrib import messages
 from .forms import UserForm
 from django.http import HttpResponse
 from django.contrib.auth import authenticate,login as auth_login
 from utils import get_db_mongo
+
+User = get_user_model()
 
 def show_login(request):
     return render(request, 'login.html')
