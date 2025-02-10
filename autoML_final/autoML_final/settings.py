@@ -96,7 +96,7 @@ DATABASES = {
         'HOST': os.getenv("HOST_PG"),
         'PORT': int(os.getenv("PORT_PG", 5432)),
         'OPTIONS': {
-            'options': '-c search_path=auth_schema',
+            'options': '-c search_path=auth_schema,public',
         },
     },
     'user_data': {
@@ -107,7 +107,7 @@ DATABASES = {
         'HOST': os.getenv("HOST_PG"),
         'PORT': int(os.getenv("PORT_PG", 5432)),
         'OPTIONS': {
-            'options': '-c search_path=user_data_schema',
+            'options': '-c search_path=user_data_schema,public',
         },
     },
 }
@@ -159,23 +159,6 @@ SESSION_ENGINE = 'django.contrib.sessions.backends.db'  # ou autre backend de se
 SESSION_COOKIE_SECURE = True  # Assurez-vous que les cookies de session sont sécurisés en HTTPS
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'handlers': {
-        'console': {
-            'level': 'DEBUG',  # Définit le niveau de log sur DEBUG
-            'class': 'logging.StreamHandler',
-        },
-    },
-    'loggers': {
-        'django.db.backends': {
-            'level': 'DEBUG',  # Affiche les logs des requêtes SQL exécutées par Django
-            'handlers': ['console'],
-        },
-        'django': {
-            'level': 'DEBUG',
-            'handlers': ['console'],
-        },
-    },
-}
+AUTH_USER_MODEL = 'auth_user.CustomUser'  # Remplace 'ton_app' par le nom de ton application
+
+
