@@ -26,6 +26,7 @@ import base64,io
 ##########--Autre--################
 import pandas as pd
 import json
+from .tasks import train_model_task
 
 
 
