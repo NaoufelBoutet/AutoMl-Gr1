@@ -20,8 +20,8 @@ MONGO_CONFIG = {
     "DB_NAME": os.getenv("MONGO_DB_NAME"),
     "HOST": os.getenv("MONGO_HOST"),
     "PORT": int(os.getenv("MONGO_PORT",27017)),
-    "USER": os.getenv("MONGO_USER",None),
-    "PASSWORD": os.getenv("MONGO_PASS",None)
+    "USER": os.getenv("MONGO_USER"),
+    "PASSWORD": os.getenv("MONGO_PASS")
 }
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -102,6 +102,7 @@ DATABASES = {
         },
     }
 }
+
 
 
 # Password validation

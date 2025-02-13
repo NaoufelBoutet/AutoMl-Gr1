@@ -1,5 +1,5 @@
 from pymongo import MongoClient
-def get_db_mongo(db_name, host, port, username=None, password=None):
+def get_db_mongo(db_name, host, port, username, password):
     client = MongoClient(host=host,
                         port=int(port),
                         username=username,

@@ -4,13 +4,9 @@ on:
   push:
     branches:
       - kaelig
-    paths:
-      - "autoML_final/"   # Assure-toi que ce répertoire contient tes fichiers importants
   pull_request:
     branches:
       - kaelig
-    paths:
-      - "autoML_final/"   # Pareil ici, pour ne suivre que les modifications dans ce dossier
 
 jobs:
   test:
@@ -56,7 +52,7 @@ jobs:
       # Wait for the Postgres service to be ready
       - name: Wait for Postgres to be ready
         run: |
-          until pg_isready -h localhost -p 5432 -U ${{ secrets.POSTGRES_USER }}; do
+          until pg_isready -h ${{ secrets.POSTGRES_HOST }} -p ${{ secrets.POSTGRES_PORT }} -U ${{ secrets.POSTGRES_USER }}; do
             echo "Waiting for postgres..."
             sleep 2
           done
@@ -64,7 +60,7 @@ jobs:
       # Wait for MongoDB to be ready
       - name: Wait for MongoDB to be ready
         run: |
-          until mongosh --host localhost --port 27017 --username ${{ secrets.MONGO_USER }} --password ${{ secrets.MONGO_PASS }} --eval 'db.adminCommand("ping")'; do
+          until mongosh --host ${{ secrets.MONGO_HOST }} --port ${{ secrets.MONGO_PORT }} --username ${{ secrets.MONGO_USER }} --password ${{ secrets.MONGO_PASS }} --eval 'db.adminCommand("ping")'; do
             echo "Waiting for MongoDB..."
             sleep 2
           done
@@ -73,8 +69,18 @@ jobs:
       - name: Set up Django environment
         run: |
           export DJANGO_SETTINGS_MODULE=autoML_final.settings
-          export DATABASE_URL=postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@localhost:5432/$POSTGRES_DB
-          export MONGO_DB_URI=mongodb://$MONGO_USER:$MONGO_PASS@localhost:27017/$MONGO_DB_NAME
+          export DATABASE_URL=postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@$POSTGRES_HOST:$POSTGRES_PORT/$POSTGRES_DB
+          export MONGO_DB_URI=mongodb://$MONGO_USER:$MONGO_PASS@$MONGO_HOST:$MONGO_PORT/$MONGO_DB_NAME
+          export MONGO_DB_NAME=$MONGO_DB_NAME
+          export MONGO_USER=$MONGO_USER
+          export MONGO_PASS=$MONGO_PASS
+          export MONGO_HOST=$MONGO_HOST
+          export MONGO_PORT=$MONGO_PORT
+          export NAME_PG=$POSTGRES_DB
+          export USER_PG=$POSTGRES_USER
+          export PASSWORD_PG=$POSTGRES_PASSWORD
+          export HOST_PG=$POSTGRES_HOST
+          export PORT_PG=$POSTGRES_PORT
 
       # Run migrations
       - name: Run migrations
