@@ -31,4 +31,6 @@ urlpatterns = [
     path('__debug__/', include('debug_toolbar.urls')),
     path('home/',autoML_views.espace_personel,name='perso'),
     path('home/project/',autoML_views.liste_project, name='liste_project'),
+    path('home/creer_project/',autoML_views.creer_project, name='creer_project'),
+    path('home/project/<str:project_name>/',autoML_views.project, name='project'),
 ]

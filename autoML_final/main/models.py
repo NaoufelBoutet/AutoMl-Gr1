@@ -1,37 +1,45 @@
-from django.db import models
-
-# Create your models here.
 from django.conf import settings
 from django.db import models
-import json
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
-from django.conf import settings
-from django.db import models
-
-class User_project(models.Model):
+class Project(models.Model):
     """Table qui stocke les projets liés à un utilisateur"""
-    user = models.OneToOneField(
+    user = models.ForeignKey(
         settings.AUTH_USER_MODEL, 
         on_delete=models.CASCADE, 
-        primary_key=True
+        related_name="projets"
     )
-    projects = models.JSONField(default=dict)
+    projet = models.CharField(max_length=255,primary_key=True)
+    date_creation = models.DateTimeField(auto_now_add=True)
+    
+    def del_projet(self):
+        """Supprimer un projet"""
+        self.delete()
 
-    def add_project(self, project_name):
-        """Créer un nouveau projet et l'associer à l'utilisateur"""
-        project = ProjectsDatasets.objects.create(user_project=self)
-        self.projects[str(project_name)] = project.id
-        self.save()
-        return project
+    class Meta:
+        unique_together = ('user', 'projet')  # Un utilisateur ne peut pas avoir deux projets du même nom
 
-class ProjectsDatasets(models.Model):
+class Dataset(models.Model):
     """Table qui stocke les datasets liés à un projet"""
-    user_project = models.OneToOneField(User_project, on_delete=models.CASCADE,primary_key=True)
-    datasets = models.JSONField(default=dict)
-    def add_dataset(self, dataset_name, dataset_id):
-        """Ajoute un dataset au dictionnaire"""
-        self.datasets[str(dataset_name)] = dataset_id
-        self.save()
+    projet = models.ForeignKey(
+        Project,  # On utilise le modèle Project ici
+        on_delete=models.CASCADE, 
+        related_name="datasets"
+    )
+    dataset = models.CharField(max_length=255,primary_key=True)
+    description = models.TextField(blank=True, null=True)
+
+    class Meta:
+        unique_together = ('projet', 'dataset')  # Un projet ne peut pas avoir deux datasets du même nom
+
+class Graphique(models.Model):
+    """Table des graphiques liés à un dataset"""
+    dataset = models.ForeignKey(
+        Dataset,  # On utilise le modèle Dataset ici
+        on_delete=models.CASCADE, 
+        related_name="graphiques"
+    )
+    graphique = models.CharField(max_length=100,primary_key=True)
+    donnees = models.JSONField()

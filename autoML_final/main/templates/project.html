@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+
+{% block content %}
+{% load filters %}
+{% load static %}
+<link rel="stylesheet" href="{% static 'style.css' %}">
+<script src="{% static 'scripts.js' %}"></script>
+    <body>
+        
+        <nav class="nav_black">
+            <a href="{% url 'home'%}" class="a_nav_black">
+                <div class="nav_police_black">
+                HOME
+                </div>
+            </a>
+            <a href="{% url 'perso' %}" class="a_nav_black">
+                <div class="nav_police_black">
+                Espace Perso
+                </div>
+            </a>
+            <a href="{% url 'liste_project' %}" class="a_nav_black">
+                <div class="nav_police_black">
+                Project
+                </div>
+            </a>
+        </nav>
+        <br><br>
+        <form method="POST" enctype="multipart/form-data" action="{% url 'upload_csv' project_name %}">
+            {% csrf_token %}
+            <label for="csv_file">Télécharger un fichier CSV :</label>
+            <input type="file" id="csv_file" name="csv_file" accept=".csv">
+            <button type="submit">Uploader</button>
+            {% if form.errors %}
+                <ul>
+                {% for field in form %}
+                    {% for error in field.errors %}
+                        <li>{{ field.label }}: {{ error }}</li>
+                    {% endfor %}
+                {% endfor %}
+                </ul>
+            {% endif %}
+        </form>
+        <h2>
+            Voici les datasets du projets :
+        </h2>
+        <div >
+            {% if liste_dataset %}
+            <form method="post" action="{% url 'project' project_name=project_name %}">
+                {% csrf_token %}
+                <label for="dataset-select">Choisissez un dataset :</label>
+                <select id="dataset-select" name="filename" required>
+                    <option value="" disabled selected>-- Sélectionnez un dataset --</option>
+                    {% for filename in liste_dataset %}
+                        <option value="{{ filename }}">{{ filename }}</option>
+                    {% endfor %}
+                </select>
+                <button type="submit" name="action" value="action">Observer le dataset</button>
+                <button type="submit" name="action" value="action4">Visualiser les données</button>
+                <button type="submit" name="action" value="action1">Modifier le dataset</button>
+                <button type="submit" name="action" value="action2">Magic clean</button>
+                <button type="submit" name="action" value="action5">Start  ML !!!</button>
+                <button type="submit" name="action" value="action3">DELETE LE DATASET</button>
+                
+            </form>            
+            {% else %}
+                <p>Aucun dataset trouvé.</p>
+            {% endif %}
+        </div>
+        {% if dico_info %}
+            <button id="toggle-button">Afficher/Masquer les infos df</button>
+            <div id="toggle-div" style="display:none;" class="project-details">
+                <div>
+                    Le df contient {{dico_info.colonne}} colonne
+                </div>
+                <div>
+                    Le df contient {{dico_info.ligne}} ligne
+                </div>
+                <div>
+                    nombre de valeur nul par colonne :
+                    {{dico_info.nb_nul|safe}}
+                </div>
+                <div>
+                    Le df contient {{dico_info.nb_colonne_double}} ligne dupliqué
+                </div>
+            </div>
+        {%endif%}
+        <br><br>
+        {% if dico_type and rows %}
+            <div>
+                <table id="dataframe-table" class="df">
+                    <thead>
+                        <tr>
+                            {% for col in columns %}
+                                <th>{{ col }} ({{ dico_type|dict_get:col }})</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in rows %}
+                            <tr>
+                                {% for col in columns %}
+                                    <td>{{ row|dict_get:col }}</td>
+                                {% endfor %}
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p>Le DataFrame est vide ou non défini.</p>
+            {% endif %}
+        
+        <!-- Placer les scripts ici, après que le DOM soit chargé -->
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
+        <script src="{% static 'scripts.js' %}"></script>
+
+    </body>
+{% endblock %}

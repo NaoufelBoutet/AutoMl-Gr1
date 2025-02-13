@@ -1,10 +1,10 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from utils import get_db_mongo
 from django.contrib.auth.decorators import login_required
 import pandas as pd
 from pymongo import MongoClient
 from django.contrib.auth import get_user_model
-from .models import User_project, ProjectsDatasets
+from .models import Project, Dataset
 
 # Utilisation de get_user_model pour obtenir le modèle utilisateur correct
 User = get_user_model()
@@ -20,29 +20,38 @@ def espace_personel(request):
 
 @login_required
 def liste_project(request):
-    username = request.user.username
-    user = User.objects.get(username=username)  # Trouver l'utilisateur avec ID 1 (par exemple)
-    dico_project = User_project.objects.get(user=user).projects
+    user = request.user # Trouver l'utilisateur avec ID 1 (par exemple)
+    liste_project = list(Project.objects.filter(user=user).values_list('projet', flat=True)) 
+    print(liste_project)
     if request.method == 'POST':
         action = request.POST.get('action_liste_prj', None)
         projet = request.POST.get('projet', None)
         if action == 'action1':
-            #delete_project(username, projet)  
-            #list_project = get_project_by_user(username, id)  
-             #print("2",list_project)
-             pass
-    return render(request, 'liste_project.html', {'username': username, 'projects': dico_project,})
+            proj = Project.objects.get(user=user,projet=projet)
+            proj.del_project(projet)
+            liste_project = list(Project.objects.filter(user=user).values_list('projet', flat=True)) 
+            print(liste_project)
+    return render(request, 'liste_project.html', {'username': user.username, 'projects': liste_project,})
 
 @login_required
 def creer_project(request):
-    username=request.user.username
-    user = User.objects.get(username=username)
-    user_projects = User_project.objects.get(user=user)
+    user = request.user
     if request.method == 'POST':
         nom_projet = request.POST.get("nom_projet")
+        print(nom_projet)
         if nom_projet: 
-            user_projects.projects.
+            print('ouuuuuuuuuuuuuu')
+            try :
+                Project.objects.create(user=user,projet=nom_projet)
+                print('noooooooooooooooooooooooo')
+            except:
+                pass
     return redirect('liste_project')
+
+@login_required
+def project(request,project_name):
+    username=request.user.username
+    return render(request,'project.html',{'username':username,'project_name':project_name})
 
 class Df_perso:
     def __init__(self,df):

@@ -18,7 +18,16 @@
             </a>
             </nav>
         <h1>Page pour créer un projet</h1>
+        <div>
+            <form method="POST"  action="{% url 'creer_project' %}">
+                {% csrf_token %}
+                
+                <label for="projet">Creer un projet :</label>
+                <input type="text" id="nom_projet" name="nom_projet" placeholder="Entrez le nom du projet" required minlength="3" maxlength="100">
+                <button type="submit">Creer</button>
+            </form>
 
+        </div>
         <h1>Page pour regarder les projet</h1>
         <div >
             {% if projects %}
@@ -32,8 +41,8 @@
                             </header>
                             <div class="card-body"></div>
                             <div class="card-footer">
-                                <button class="btn" onclick="window.location.href='{% url 'project' project_name=project.nom_projet %}'">Go</button>
-                                <button class="btn delete-btn" data-projet="{{ project.nom_projet }}" name="action_liste_prj" value="action1">Delete le projet</button>
+                                <button class="btn" onclick="window.location.href='{% url 'project' project_name=project %}'">Go</button>
+                                <button class="btn delete-btn" data-projet="{{ project }}" name="action_liste_prj" value="action1">Delete le projet</button>
                             </div>
                         </div>
                     </div>
