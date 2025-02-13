@@ -74,9 +74,6 @@
             if (xhr.readyState == 4 && xhr.status == 200) {
                 // Quand la réponse est reçue avec succès
                 document.getElementById("project-info").innerHTML = xhr.responseText;
-    
-                // Recharge la page après l'exécution
-                location.reload(); // Recharge la page après l'exécution de la fonction
             }
             };
     

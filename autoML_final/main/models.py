@@ -11,35 +11,44 @@ class Project(models.Model):
         on_delete=models.CASCADE, 
         related_name="projets"
     )
-    projet = models.CharField(max_length=255,primary_key=True)
+    projet_name = models.CharField(max_length=255, unique=True)  # Champ de nom du projet
     date_creation = models.DateTimeField(auto_now_add=True)
-    
-    def del_projet(self):
-        """Supprimer un projet"""
-        self.delete()
 
     class Meta:
-        unique_together = ('user', 'projet')  # Un utilisateur ne peut pas avoir deux projets du même nom
+        # L'unicité sur 'user' et 'projet_name' reste présente
+        unique_together = ('user', 'projet_name')  
+
+    def __str__(self):
+        return self.projet_name
+
 
 class Dataset(models.Model):
     """Table qui stocke les datasets liés à un projet"""
     projet = models.ForeignKey(
-        Project,  # On utilise le modèle Project ici
+        Project, 
         on_delete=models.CASCADE, 
         related_name="datasets"
     )
-    dataset = models.CharField(max_length=255,primary_key=True)
+    dataset_name = models.CharField(max_length=255, unique=True)  # Champ de nom du dataset
     description = models.TextField(blank=True, null=True)
 
     class Meta:
-        unique_together = ('projet', 'dataset')  # Un projet ne peut pas avoir deux datasets du même nom
+        # L'unicité sur 'projet' et 'dataset_name' reste présente
+        unique_together = ('projet', 'dataset_name')
+
+    def __str__(self):
+        return self.dataset_name
+
 
 class Graphique(models.Model):
     """Table des graphiques liés à un dataset"""
     dataset = models.ForeignKey(
-        Dataset,  # On utilise le modèle Dataset ici
+        Dataset,
         on_delete=models.CASCADE, 
         related_name="graphiques"
     )
-    graphique = models.CharField(max_length=100,primary_key=True)
+    graphique = models.CharField(max_length=100, unique=True)  # Champ de nom du graphique
     donnees = models.JSONField()
+
+    def __str__(self):
+        return self.graphique

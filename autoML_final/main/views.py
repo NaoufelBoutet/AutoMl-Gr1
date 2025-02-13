@@ -20,17 +20,13 @@ def espace_personel(request):
 
 @login_required
 def liste_project(request):
-    user = request.user # Trouver l'utilisateur avec ID 1 (par exemple)
-    liste_project = list(Project.objects.filter(user=user).values_list('projet', flat=True)) 
-    print(liste_project)
+    user = request.user
+    liste_project = list(Project.objects.filter(user=user).values_list('projet_name', flat=True)) 
     if request.method == 'POST':
-        action = request.POST.get('action_liste_prj', None)
-        projet = request.POST.get('projet', None)
+        action, projet = request.POST.get('action_liste_prj', None), request.POST.get('projet', None)
         if action == 'action1':
-            proj = Project.objects.get(user=user,projet=projet)
-            proj.del_project(projet)
-            liste_project = list(Project.objects.filter(user=user).values_list('projet', flat=True)) 
-            print(liste_project)
+            Project.objects.get(user=user, projet_name=projet).delete()
+            liste_project = list(Project.objects.filter(user=user).values_list('projet_name', flat=True)) 
     return render(request, 'liste_project.html', {'username': user.username, 'projects': liste_project,})
 
 @login_required
@@ -38,13 +34,10 @@ def creer_project(request):
     user = request.user
     if request.method == 'POST':
         nom_projet = request.POST.get("nom_projet")
-        print(nom_projet)
         if nom_projet: 
-            print('ouuuuuuuuuuuuuu')
             try :
-                Project.objects.create(user=user,projet=nom_projet)
-                print('noooooooooooooooooooooooo')
-            except:
+                Project.objects.create(user=user,projet_name=nom_projet)
+            except :
                 pass
     return redirect('liste_project')
 
